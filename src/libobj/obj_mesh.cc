@@ -10,19 +10,19 @@ namespace Obj {
 namespace {
 
 struct compare {
-    bool operator()(const Index& lhs, const Index& rhs) const noexcept {
-        if (lhs.f < rhs.f)
-            return true;
-        if (rhs.f < lhs.f)
-            return false;
-        if (lhs.n < rhs.n)
-            return true;
-        if (rhs.n < lhs.n)
-            return false;
-        if (lhs.t < rhs.t)
-            return true;
-        return rhs.t < lhs.t;
-    }
+  bool operator()(const Index &lhs, const Index &rhs) const noexcept {
+    if (lhs.f < rhs.f)
+      return true;
+    if (rhs.f < lhs.f)
+      return false;
+    if (lhs.n < rhs.n)
+      return true;
+    if (rhs.n < lhs.n)
+      return false;
+    if (lhs.t < rhs.t)
+      return true;
+    return rhs.t < lhs.t;
+  }
 };
 
 using IndexMap = std::map<Index, unsigned int, compare>;
