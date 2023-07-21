@@ -36,23 +36,20 @@ struct Mesh {
   std::vector<float> vertices;
   std::vector<float> verticesw;
   std::vector<UseMtl> usemtl;
-  Material *mtl{};
+  Material* mtl{};
 
   Mesh() = default;
   ~Mesh();
 
-  Status Open(const std::string &path);
-  bool HasTextures()
-  noexcept;
-  bool HasNormals()
-  noexcept;
-  unsigned int GetStride() const
-  noexcept;
+  Status Open(const std::string& path);
+  bool HasTextures() noexcept;
+  bool HasNormals() noexcept;
+  unsigned int GetStride() const noexcept;
   void Destroy();
 
  protected:
   // convert data to prepared mesh
-  void DataToObj(Data *obj_data);
+  void DataToObj(Data& obj_data);
 
  private:
   bool m_has_textures{};
@@ -66,13 +63,9 @@ inline Material::Material()
 
 inline Mesh::~Mesh() { delete[] mtl; }
 
-inline bool Mesh::HasNormals() noexcept {
-  return m_has_normals;
-}
+inline bool Mesh::HasNormals() noexcept { return m_has_normals; }
 
-inline bool Mesh::HasTextures() noexcept {
-  return m_has_textures;
-}
+inline bool Mesh::HasTextures() noexcept { return m_has_textures; }
 
 inline unsigned int Mesh::GetStride() const noexcept {
   if (m_has_normals && m_has_textures) {
@@ -86,11 +79,11 @@ inline unsigned int Mesh::GetStride() const noexcept {
   }
 }
 
-inline Status Mesh::Open(const std::string &path) {
+inline Status Mesh::Open(const std::string& path) {
   auto data = new Data();
   auto stat = Status::noExc;
   if (data->FromFile(path)) {
-    DataToObj(data);
+    DataToObj(*data);
   } else {
     stat = data->GetStatus();
   }
@@ -112,6 +105,6 @@ inline void Mesh::Destroy() {
   mtl = nullptr;
 }
 
-} // namespace Obj
+}  // namespace Obj
 
-#endif // OBJ_MESH_H_
+#endif  // OBJ_MESH_H_

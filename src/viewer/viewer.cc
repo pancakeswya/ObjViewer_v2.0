@@ -7,7 +7,7 @@
 
 #include "./ui_viewer.h"
 
-Viewer::Viewer(QWidget *parent)
+Viewer::Viewer(QWidget* parent)
     : QMainWindow(parent),
       ui(new Ui::Viewer),
       settings("School21", "3DViewer_v1.0") {
@@ -166,9 +166,8 @@ void Viewer::OnPushButtonOpenObjClicked() {
     auto stat = ui->objWidget->Open(filepath);
     if (stat != Obj::Status::noExc) {
       QMessageBox::critical(this, "Error",
-                                QStringList({"No errors occurred",
-                                             "Invalid file",
-                                             "No obj file to open"})[short(stat)]);
+                            QStringList({"No errors occurred", "Invalid file",
+                                         "No obj file to open"})[short(stat)]);
     }
     ui->label_file_name->setText("Название файла: " + fileInfo.fileName());
     ui->label_vertex_am->setText(

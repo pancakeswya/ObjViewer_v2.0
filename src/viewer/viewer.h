@@ -17,7 +17,7 @@ class Viewer : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit Viewer(QWidget *parent = nullptr);
+  explicit Viewer(QWidget* parent = nullptr);
   ~Viewer() override;
 
  protected:
@@ -48,7 +48,7 @@ class Viewer : public QMainWindow {
   void OnComboBoxCurrentIndexChanged(int index);
 
  private:
-  Ui::Viewer *ui;
+  Ui::Viewer* ui;
   QSettings settings;
 };
 #endif  // VIEWER_H

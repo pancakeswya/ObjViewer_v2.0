@@ -15,16 +15,16 @@ namespace Obj {
 class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   Q_OBJECT
  public:
-  Status Open(const QString &);
+  Status Open(const QString&);
   void Rotate(float, int);
   void Zoom(float);
   void Move(float, int);
   void InitProgram();
   void SetLineSize(float);
   void SetPointSize(float);
-  void SetColorPoint(const QColor &);
-  void SetColorLine(const QColor &);
-  void SetColorBg(const QColor &);
+  void SetColorPoint(const QColor&);
+  void SetColorLine(const QColor&);
+  void SetColorBg(const QColor&);
   void SetModelViewType(int);
   void SetPointType(int);
   void SetLineType(bool);
@@ -34,8 +34,8 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   QColor GetColorLine() noexcept;
   QColor GetColorPoint() noexcept;
   QColor GetColorBg() noexcept;
-  QImage &GetFramebuffer();
-  explicit Loader(QWidget *parent = nullptr);
+  QImage& GetFramebuffer();
+  explicit Loader(QWidget* parent = nullptr);
   ~Loader() override;
  public slots:
   void UpdateFramebuffer();
@@ -65,7 +65,7 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   QVector3D m_color_line;
   QVector3D m_color_point;
   QColor m_color_bg;
-  QOpenGLShaderProgram *m_program{};
+  QOpenGLShaderProgram* m_program{};
   QOpenGLVertexArrayObject m_vao;
   QMatrix4x4 m_pMat;
   QMatrix4x4 m_vMat;
@@ -77,6 +77,6 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   QImage m_frame;
 };
 
-}
+}  // namespace Obj
 
 #endif  // OBJ_LOADER_H

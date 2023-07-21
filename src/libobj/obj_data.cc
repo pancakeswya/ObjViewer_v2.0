@@ -9,7 +9,9 @@ namespace Obj {
 
 namespace {
 
-inline bool IsSpace(char c) noexcept { return (c == ' ') || (c == '\t') || (c == '\r'); }
+inline bool IsSpace(char c) noexcept {
+  return (c == ' ') || (c == '\t') || (c == '\r');
+}
 
 inline bool IsDigit(char c) noexcept { return (c >= '0') && (c <= '9'); }
 
@@ -17,17 +19,19 @@ inline bool IsEndOfName(char c) noexcept {
   return (c == '\t') || (c == '\r') || (c == '\n');
 }
 
-const char *SkipSpace(const char *ptr) noexcept {
-  for (; IsSpace(*ptr); ++ptr);
+const char* SkipSpace(const char* ptr) noexcept {
+  for (; IsSpace(*ptr); ++ptr)
+    ;
   return ptr;
 }
 
-const char *SkipLine(const char *ptr) noexcept {
-  for (; *ptr != '\n'; ++ptr);
+const char* SkipLine(const char* ptr) noexcept {
+  for (; *ptr != '\n'; ++ptr)
+    ;
   return ++ptr;
 }
 
-unsigned long int FileSize(std::ifstream &file) noexcept {
+unsigned long int FileSize(std::ifstream& file) noexcept {
   long int p, n;
   p = file.tellg();
   file.seekg(0, std::ifstream::end);
@@ -40,24 +44,24 @@ unsigned long int FileSize(std::ifstream &file) noexcept {
   }
 }
 
-std::string GetName(const char **ptr) noexcept {
-  const char *p = *ptr;
+std::string GetName(const char** ptr) noexcept {
+  const char* p = *ptr;
   p = SkipSpace(p);
   std::string name;
-  for (; !IsEndOfName(*p);++p) {
+  for (; !IsEndOfName(*p); ++p) {
     name += *p;
   }
   *ptr = p;
   return name;
 }
 
-inline const char *ReadMtlSingle(const char *ptr, float &mtl) noexcept {
-  char *end = nullptr;
+inline const char* ReadMtlSingle(const char* ptr, float& mtl) noexcept {
+  char* end = nullptr;
   mtl = std::strtof(ptr, &end);
   return end;
 }
 
-inline const char *ReadMtlTriple(const char *ptr, float triple[3]) noexcept {
+inline const char* ReadMtlTriple(const char* ptr, float triple[3]) noexcept {
   ptr = ReadMtlSingle(ptr, triple[0]);
   ptr = ReadMtlSingle(ptr, triple[1]);
   ptr = ReadMtlSingle(ptr, triple[2]);
@@ -65,18 +69,19 @@ inline const char *ReadMtlTriple(const char *ptr, float triple[3]) noexcept {
   return ptr;
 }
 
-inline const char *ReadMtlInt(const char *ptr, long int &val) noexcept {
-  char *end = nullptr;
+inline const char* ReadMtlInt(const char* ptr, long int& val) noexcept {
+  char* end = nullptr;
   val = std::strtol(ptr, &end, 10);
   return end;
 }
 
 }  // namespace
 
-const char *Data::ParseVertex(const char *ptr, std::vector<float> &array) {
+const char* Data::ParseVertex(const char* ptr, std::vector<float>& array) {
   float vert;
-  char *end = nullptr;
+  char* end = nullptr;
   char type = *ptr++;
+  // texture has 2d coords everything else 3
   int vert_max = (type == 't') ? 2 : 3;
   for (int i = 0; i < vert_max; ++i) {
     vert = std::strtof(ptr, &end);
@@ -84,6 +89,8 @@ const char *Data::ParseVertex(const char *ptr, std::vector<float> &array) {
       m_stat = Status::invalidFile;
       break;
     }
+    // if it is a position get max
+    // min value by axis
     if (type == ' ') {
       max[i] = std::max(vert, max[i]);
       min[i] = std::min(vert, min[i]);
@@ -94,8 +101,8 @@ const char *Data::ParseVertex(const char *ptr, std::vector<float> &array) {
   return ptr;
 }
 
-const char *Data::ParseFacet(const char *ptr) {
-  char *end = nullptr;
+const char* Data::ParseFacet(const char* ptr) {
+  char* end = nullptr;
   long int tmp_i;
   unsigned start_i = w_indices.size();
   size_t curr_i = 0;
@@ -103,9 +110,9 @@ const char *Data::ParseFacet(const char *ptr) {
     Index idx = {};
     tmp_i = std::strtol(ptr, &end, 10);
     if (tmp_i < 0) {
-      idx.f = v.size() / 3 - (unsigned int) (-tmp_i);
+      idx.f = v.size() / 3 - static_cast<unsigned int>(-tmp_i);
     } else if (tmp_i > 0) {
-      idx.f = (unsigned int) tmp_i - 1;
+      idx.f = static_cast<unsigned int>(tmp_i) - 1;
     }
     if (end == ptr) {
       m_stat = Status::invalidFile;
@@ -117,9 +124,9 @@ const char *Data::ParseFacet(const char *ptr) {
       if (IsDigit(*ptr)) {
         tmp_i = std::strtol(ptr, &end, 10);
         if (tmp_i < 0) {
-          idx.t = t.size() / 2 - (unsigned int) (-tmp_i);
+          idx.t = t.size() / 2 - static_cast<unsigned int>(-tmp_i);
         } else if (tmp_i > 0) {
-          idx.t = (unsigned int) tmp_i - 1;
+          idx.t = static_cast<unsigned int>(tmp_i) - 1;
         }
         if (end == ptr) {
           m_stat = Status::invalidFile;
@@ -131,9 +138,9 @@ const char *Data::ParseFacet(const char *ptr) {
     if (*ptr == '/') {
       tmp_i = std::strtol(++ptr, &end, 10);
       if (tmp_i < 0) {
-        idx.n = n.size() / 3 - (unsigned int) (-tmp_i);
+        idx.n = n.size() / 3 - static_cast<unsigned int>(-tmp_i);
       } else if (tmp_i > 0) {
-        idx.n = (unsigned int) tmp_i - 1;
+        idx.n = static_cast<unsigned int>(tmp_i) - 1;
       }
       if (end == ptr) {
         m_stat = Status::invalidFile;
@@ -162,7 +169,7 @@ const char *Data::ParseFacet(const char *ptr) {
   return ptr;
 }
 
-const char *Data::ParseMtl(const char *p) {
+const char* Data::ParseMtl(const char* p) {
   std::string path_mtl = GetName(&p);
   std::ifstream mtl_file(dir_path + path_mtl, std::ifstream::binary);
   if (mtl_file.is_open()) {
@@ -170,12 +177,12 @@ const char *Data::ParseMtl(const char *p) {
     bool found_d = false;
 
     unsigned long int bytes = FileSize(mtl_file);
-    char *buf = new char[bytes + 1];
+    char* buf = new char[bytes + 1];
     unsigned int read = mtl_file.readsome(buf, bytes);
     buf[read] = '\0';
 
-    const char *ptr = buf;
-    const char *eof = buf + read;
+    const char* ptr = buf;
+    const char* eof = buf + read;
 
     while (ptr < eof) {
       ptr = SkipSpace(ptr);
@@ -236,7 +243,7 @@ const char *Data::ParseMtl(const char *p) {
           ptr++;
           if (ptr[0] == 'a' && ptr[1] == 'p' && ptr[2] == '_') {
             ptr += 3;
-            std::string *map_ptr = nullptr;
+            std::string* map_ptr = nullptr;
             if (*ptr == 'K') {
               ptr++;
               if (ptr[0] == 'd' && IsSpace(ptr[1])) {
@@ -245,14 +252,14 @@ const char *Data::ParseMtl(const char *p) {
                 map_ptr = &new_mtl.map_kd;
               }
             } else if (*ptr == 'N') {
-              ptr++;
+              ++ptr;
               if (ptr[0] == 's' && IsSpace(ptr[1])) {
                 ++ptr;
                 new_mtl.map_Ns = GetName(&ptr);
                 map_ptr = &new_mtl.map_Ns;
               }
             } else if ((ptr[0] == 'b' || ptr[0] == 'B') && ptr[1] == 'u' &&
-                ptr[2] == 'm' && ptr[3] == 'p' && IsSpace(ptr[4])) {
+                       ptr[2] == 'm' && ptr[3] == 'p' && IsSpace(ptr[4])) {
               ptr += 4;
               new_mtl.map_bump = GetName(&ptr);
               map_ptr = &new_mtl.map_bump;
@@ -262,7 +269,8 @@ const char *Data::ParseMtl(const char *p) {
             }
           }
           break;
-        case '#':break;
+        case '#':
+          break;
       }
       ptr = SkipLine(ptr);
     }
@@ -275,7 +283,7 @@ const char *Data::ParseMtl(const char *p) {
   return p;
 }
 
-const char *Data::ParseUsemtl(const char *ptr) {
+const char* Data::ParseUsemtl(const char* ptr) {
   std::string use_mtl_name = GetName(&ptr);
   for (unsigned int i = 0; i < mtl.size(); ++i) {
     if (mtl[i].name == use_mtl_name) {
@@ -289,7 +297,7 @@ const char *Data::ParseUsemtl(const char *ptr) {
   return ptr;
 }
 
-void Data::ParseBuffer(const char *ptr, const char *end) {
+void Data::ParseBuffer(const char* ptr, const char* end) {
   while (ptr != end) {
     ptr = SkipSpace(ptr);
     if (*ptr == 'v') {
@@ -325,7 +333,7 @@ void Data::ParseBuffer(const char *ptr, const char *end) {
   }
 }
 
-void Data::ReadFile(const std::string &path) {
+void Data::ReadFile(const std::string& path) {
   std::ifstream file(path, std::ifstream::binary);
   if (!file.is_open()) {
     m_stat = Status::noFile;
@@ -338,7 +346,7 @@ void Data::ReadFile(const std::string &path) {
     p.remove_filename();
     dir_path = p.generic_string();
   }
-  char *buffer = new char[2 * bufferSize];
+  char* buffer = new char[2 * bufferSize];
   start = buffer;
   for (;;) {
     read = file.readsome(start, bufferSize);
@@ -366,7 +374,7 @@ void Data::ReadFile(const std::string &path) {
     }
     ++last;
     ParseBuffer(buffer, last);
-    bytes = (unsigned int) (end - last);
+    bytes = static_cast<unsigned int>(end - last);
     std::memmove(buffer, last, bytes);
     start = buffer + bytes;
   }
@@ -381,7 +389,7 @@ void Data::ReadFile(const std::string &path) {
   file.close();
 }
 
-bool Data::FromFile(const std::string &path) {
+bool Data::FromFile(const std::string& path) {
   ReadFile(path);
   if (m_stat != Status::noExc) {
     Flush();
@@ -403,4 +411,4 @@ inline void Data::Flush() {
   std::string().swap(dir_path);
 }
 
-} // namspace Obj
+}  // namespace Obj

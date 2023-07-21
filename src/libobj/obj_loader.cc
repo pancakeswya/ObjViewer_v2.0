@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <cmath>
+#include <QDebug>
 
 namespace Obj {
 
@@ -108,10 +109,7 @@ void Loader::VaoCreate() {
   m_ebo.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
   m_program->enableAttributeArray("position");
-  if (!m_obj.HasNormals() && !m_obj.HasTextures()) {
-    m_model_view_type = 0;
-  }
-  if (m_model_view_type) {
+  if (m_model_view_type && (m_obj.HasNormals() || m_obj.HasTextures())) {
     unsigned int stride = m_obj.GetStride();
 
     m_vbo.allocate(m_obj.vertices.data(),
@@ -125,10 +123,7 @@ void Loader::VaoCreate() {
       m_program->enableAttributeArray("texCoords");
       m_program->setAttributeBuffer("texCoords", GL_FLOAT, 3 * sizeof(float), 2,
                                     stride);
-    } else {
-      m_model_view_type = 1;
     }
-
     if (m_obj.HasNormals()) {
       use_normals = true;
       m_program->enableAttributeArray("normal");
@@ -270,7 +265,7 @@ void Loader::paintGL() {
 
   m_program->setUniformValue(m_colorUniform, m_color_line);
 
-  if (m_model_view_type) {
+  if (m_model_view_type && (m_obj.HasNormals() || m_obj.HasTextures())) {
     size_t prev_offset = 0;
     bool is_textured = (m_model_view_type == 2);
     for (auto& mtl : m_obj.usemtl) {
@@ -323,4 +318,4 @@ void Loader::paintGL() {
   m_program->release();
 }
 
-} // namespace Obj
+}  // namespace Obj

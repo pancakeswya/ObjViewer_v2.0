@@ -7,11 +7,7 @@
 
 namespace Obj {
 
-enum class Status : short int {
-  noExc,
-  invalidFile,
-  noFile
-};
+enum class Status : short int { noExc, invalidFile, noFile };
 
 struct Index {
   unsigned int f;
@@ -55,23 +51,23 @@ struct Data {
   float max[3];
   float min[3];
 
-  unsigned int facet_count;
-  unsigned int vertex_count;
+  unsigned int facet_count{};
+  unsigned int vertex_count{};
 
   std::string dir_path;
   Data();
   ~Data() = default;
-  bool FromFile(const std::string &path);
+  bool FromFile(const std::string& path);
   Status GetStatus() noexcept;
 
  protected:
   void Flush();
-  void ReadFile(const std::string &path);
-  void ParseBuffer(const char *ptr, const char *end);
-  const char *ParseMtl(const char *ptr);
-  const char *ParseUsemtl(const char *ptr);
-  const char *ParseFacet(const char *ptr);
-  const char *ParseVertex(const char *ptr, std::vector<float> &vertices);
+  void ReadFile(const std::string& path);
+  void ParseBuffer(const char* ptr, const char* end);
+  const char* ParseMtl(const char* ptr);
+  const char* ParseUsemtl(const char* ptr);
+  const char* ParseFacet(const char* ptr);
+  const char* ParseVertex(const char* ptr, std::vector<float>& vertices);
   static constexpr unsigned int bufferSize = 65536;
 
  private:
@@ -87,10 +83,8 @@ inline Data::Data()
       min{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
           std::numeric_limits<float>::max()} {}
 
-inline Status Data::GetStatus() noexcept {
-  return m_stat;
-}
+inline Status Data::GetStatus() noexcept { return m_stat; }
 
-}
+}  // namespace Obj
 
-#endif // OBJ_DATA_H_
+#endif  // OBJ_DATA_H_
