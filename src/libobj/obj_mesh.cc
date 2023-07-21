@@ -9,8 +9,23 @@ namespace Obj {
 
 namespace {
 
-using IndexTuple = std::tuple<unsigned int, unsigned int, unsigned int>;
-using IndexMap = std::map<IndexTuple, unsigned int>;
+struct compare {
+    bool operator()(const Index& lhs, const Index& rhs) const noexcept {
+        if (lhs.f < rhs.f)
+            return true;
+        if (rhs.f < lhs.f)
+            return false;
+        if (lhs.n < rhs.n)
+            return true;
+        if (rhs.n < lhs.n)
+            return false;
+        if (lhs.t < rhs.t)
+            return true;
+        return rhs.t < lhs.t;
+    }
+};
+
+using IndexMap = std::map<Index, unsigned int, compare>;
 
 void SetTexture(QOpenGLTexture &texture, const std::string &path) {
   if (!path.empty()) {
@@ -58,12 +73,11 @@ void Mesh::DataToObj(Data *data) {
     // optimizing indices by connecting combined idx
     unsigned int next_combined_idx = 0, combined_idx = 0;
     for (auto &idx : data->indices) {
-      if (index_map.count(IndexTuple(idx.f, idx.t, idx.n))) {
-        combined_idx = index_map.at(IndexTuple(idx.f, idx.t, idx.n));
+      if (index_map.count(idx)) {
+        combined_idx = index_map.at(idx);
       } else {
         combined_idx = next_combined_idx;
-        index_map.insert(
-            std::make_pair(IndexTuple(idx.f, idx.t, idx.n), combined_idx));
+        index_map.insert(std::make_pair(idx, combined_idx));
         unsigned int i_v = idx.f * 3, i_n = idx.n * 3, i_t = idx.t * 2;
         vertices.push_back(data->v[i_v]);
         vertices.push_back(data->v[i_v + 1]);
