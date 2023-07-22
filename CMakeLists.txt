@@ -36,6 +36,7 @@ set(PROJECT_SOURCES
         src/libobj/obj_mesh.cc
         src/libobj/obj_loader.cc
         src/libobj/obj_loader.h
+        src/libobj/earcut.h
         src/libgif/gif.c
         src/libgif/gif.h
         src/libgif/gif_maker.h

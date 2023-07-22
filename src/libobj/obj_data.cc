@@ -1,9 +1,11 @@
 #include "obj_data.h"
+#include "earcut.h"
 
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <map>
 
 namespace Obj {
 
@@ -75,7 +77,176 @@ inline const char* ReadMtlInt(const char* ptr, long int& val) noexcept {
   return end;
 }
 
+struct Point3D {
+  float x, y, z;
+};
+
+inline float GetLength(const Point3D& e) {
+  return std::sqrt(e.x * e.x + e.y * e.y + e.z * e.z);
+}
+
+inline Point3D Cross(const Point3D& v1, const Point3D& v2) {
+  return {v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
+          v1.x * v2.y - v1.y * v2.x};
+}
+
+inline Point3D Normalize(const Point3D& e) {
+  float inv_length = 1.0f / GetLength(e);
+  return {e.x * inv_length, e.y * inv_length, e.z * inv_length};
+}
+
+inline float Dot(const Point3D& v1, const Point3D& v2) {
+  return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
+}
+
+inline Point3D WorldToLocal(const Point3D& a, const Point3D& u,
+                            const Point3D& v, const Point3D& w) {
+  return {Dot(a, u), Dot(a, v), Dot(a, w)};
+}
+
 }  // namespace
+
+void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
+                          unsigned int npolys) {
+  // quad to 2 triangles
+  if (npolys == 4) {
+    float v0x = v[raw_ind[0].fv * 3 + 0];
+    float v0y = v[raw_ind[0].fv * 3 + 1];
+    float v0z = v[raw_ind[0].fv * 3 + 2];
+    float v1x = v[raw_ind[1].fv * 3 + 0];
+    float v1y = v[raw_ind[1].fv * 3 + 1];
+    float v1z = v[raw_ind[1].fv * 3 + 2];
+    float v2x = v[raw_ind[2].fv * 3 + 0];
+    float v2y = v[raw_ind[2].fv * 3 + 1];
+    float v2z = v[raw_ind[2].fv * 3 + 2];
+    float v3x = v[raw_ind[3].fv * 3 + 0];
+    float v3y = v[raw_ind[3].fv * 3 + 1];
+    float v3z = v[raw_ind[3].fv * 3 + 2];
+
+    float e02x = v2x - v0x;
+    float e02y = v2y - v0y;
+    float e02z = v2z - v0z;
+    float e13x = v3x - v1x;
+    float e13y = v3y - v1y;
+    float e13z = v3z - v1z;
+
+    float sqr02 = e02x * e02x + e02y * e02y + e02z * e02z;
+    float sqr13 = e13x * e13x + e13y * e13y + e13z * e13z;
+    // find nearest edge
+    if (sqr02 < sqr13) {
+      indices.push_back(raw_ind[0]);
+      indices.push_back(raw_ind[1]);
+      indices.push_back(raw_ind[2]);
+      indices.push_back(raw_ind[0]);
+      indices.push_back(raw_ind[2]);
+      indices.push_back(raw_ind[3]);
+    } else {
+      indices.push_back(raw_ind[0]);
+      indices.push_back(raw_ind[1]);
+      indices.push_back(raw_ind[3]);
+      indices.push_back(raw_ind[1]);
+      indices.push_back(raw_ind[2]);
+      indices.push_back(raw_ind[3]);
+    }
+    // triangulate polygon with earcut method
+  } else if (npolys > 4) {
+    Index i0 = raw_ind[0];
+    Index i0_2 = i0;
+
+    // Find the normal axis of the polygon using Newell's method
+    Point3D n1{};
+    for (size_t k = 0; k < npolys; ++k) {
+      i0 = raw_ind[k % npolys];
+      size_t vi0 = size_t(i0.fv);
+
+      size_t j = (k + 1) % npolys;
+      i0_2 = raw_ind[j];
+      size_t vi0_2 = size_t(i0_2.fv);
+
+      float v0x = v[vi0 * 3 + 0];
+      float v0y = v[vi0 * 3 + 1];
+      float v0z = v[vi0 * 3 + 2];
+
+      float v0x_2 = v[vi0_2 * 3 + 0];
+      float v0y_2 = v[vi0_2 * 3 + 1];
+      float v0z_2 = v[vi0_2 * 3 + 2];
+
+      const Point3D point1 = {v0x, v0y, v0z};
+      const Point3D point2 = {v0x_2, v0y_2, v0z_2};
+
+      Point3D a = {point1.x - point2.x, point1.y - point2.y,
+                   point1.z - point2.z};
+      Point3D b = {point1.x + point2.x, point1.y + point2.y,
+                   point1.z + point2.z};
+
+      n1.x += (a.y * b.z);
+      n1.y += (a.z * b.x);
+      n1.z += (a.x * b.y);
+    }
+    float length_n = GetLength(n1);
+    // Check if zero length normal
+    if (length_n <= 0) {
+      m_stat = Status::invalidFile;
+      return;
+    }
+    // Negative is to flip the normal to the correct direction
+    float inv_length = -1.0f / length_n;
+    n1.x *= inv_length;
+    n1.y *= inv_length;
+    n1.z *= inv_length;
+
+    Point3D axis_w, axis_v, axis_u;
+    axis_w = n1;
+    Point3D a;
+    if (std::abs(axis_w.x) > 0.9999999f) {
+      a = {0.0f, 1.0f, 0.0f};
+    } else {
+      a = {1.0f, 0.0f, 0.0f};
+    }
+    axis_v = Normalize(Cross(axis_w, a));
+    axis_u = Cross(axis_w, axis_v);
+    using Point2D = std::pair<float, float>;
+
+    // first polyline define the main polygon
+    std::vector<std::vector<Point2D>> polygon;
+
+    std::vector<Point2D> polyline;
+
+    // Find best normal and project v0x and v0y to those coordinates, instead of
+    // picking a plane aligned with an axis (which can flip polygons).
+
+    // Fill polygon data(facevarying vertices).
+    for (size_t k = 0; k < npolys; k++) {
+      i0 = raw_ind[k];
+      size_t vi0 = size_t(i0.fv);
+      if (3 * vi0 + 2 >= v.size()) {
+        m_stat = Status::invalidFile;
+        return;
+      }
+
+      float v0x = v[vi0 * 3 + 0];
+      float v0y = v[vi0 * 3 + 1];
+      float v0z = v[vi0 * 3 + 2];
+
+      Point3D polypoint = {v0x, v0y, v0z};
+      Point3D loc = WorldToLocal(polypoint, axis_u, axis_v, axis_w);
+
+      polyline.emplace_back(std::make_pair(loc.x, loc.y));
+    }
+    polygon.push_back(polyline);
+    std::vector<unsigned int> order = mapbox::earcut<unsigned int>(polygon);
+    if (order.size() % 3 != 0) {
+      m_stat = Status::invalidFile;
+      return;
+    }
+    for (auto& i : order) {
+      indices.push_back(raw_ind[i]);
+    }
+  } else {
+    // polygon is a triangle just move it in
+    std::move(raw_ind.begin(), raw_ind.end(), std::back_inserter(indices));
+  }
+}
 
 const char* Data::ParseVertex(const char* ptr, std::vector<float>& array) {
   float vert;
@@ -104,15 +275,16 @@ const char* Data::ParseVertex(const char* ptr, std::vector<float>& array) {
 const char* Data::ParseFacet(const char* ptr) {
   char* end = nullptr;
   long int tmp_i;
-  unsigned start_i = w_indices.size();
-  size_t curr_i = 0;
+  unsigned int start_i = w_indices.size();
+  std::vector<Index> raw_ind;
+  size_t npolys = 0;
   while (*ptr != '\n') {
     Index idx = {};
     tmp_i = std::strtol(ptr, &end, 10);
     if (tmp_i < 0) {
-      idx.f = v.size() / 3 - static_cast<unsigned int>(-tmp_i);
+      idx.fv = v.size() / 3 - static_cast<unsigned int>(-tmp_i);
     } else if (tmp_i > 0) {
-      idx.f = static_cast<unsigned int>(tmp_i) - 1;
+      idx.fv = static_cast<unsigned int>(tmp_i) - 1;
     }
     if (end == ptr) {
       m_stat = Status::invalidFile;
@@ -124,9 +296,9 @@ const char* Data::ParseFacet(const char* ptr) {
       if (IsDigit(*ptr)) {
         tmp_i = std::strtol(ptr, &end, 10);
         if (tmp_i < 0) {
-          idx.t = t.size() / 2 - static_cast<unsigned int>(-tmp_i);
+          idx.ft = vt.size() / 2 - static_cast<unsigned int>(-tmp_i);
         } else if (tmp_i > 0) {
-          idx.t = static_cast<unsigned int>(tmp_i) - 1;
+          idx.ft = static_cast<unsigned int>(tmp_i) - 1;
         }
         if (end == ptr) {
           m_stat = Status::invalidFile;
@@ -138,9 +310,9 @@ const char* Data::ParseFacet(const char* ptr) {
     if (*ptr == '/') {
       tmp_i = std::strtol(++ptr, &end, 10);
       if (tmp_i < 0) {
-        idx.n = n.size() / 3 - static_cast<unsigned int>(-tmp_i);
+        idx.fn = vn.size() / 3 - static_cast<unsigned int>(-tmp_i);
       } else if (tmp_i > 0) {
-        idx.n = static_cast<unsigned int>(tmp_i) - 1;
+        idx.fn = static_cast<unsigned int>(tmp_i) - 1;
       }
       if (end == ptr) {
         m_stat = Status::invalidFile;
@@ -148,24 +320,18 @@ const char* Data::ParseFacet(const char* ptr) {
       }
       ptr = end;
     }
-    // triangulate as fan
-    // TODO: find new algorithm of triangulation and learn geometry
-    if (curr_i >= 3) {
-      indices.push_back(indices[indices.size() - curr_i]);
-      indices.push_back(indices[indices.size() - 2]);
-      curr_i += 2;
-    }
     // wireframe facets
     if (w_indices.size() != start_i) {
-      w_indices.push_back(idx.f);
+      w_indices.push_back(idx.fv);
     }
-    w_indices.push_back(idx.f);
+    w_indices.push_back(idx.fv);
     // push parsed indices
-    indices.push_back(idx);
+    raw_ind.push_back(idx);
     ptr = SkipSpace(ptr);
-    ++curr_i;
+    ++npolys;
   }
   w_indices.push_back(w_indices[start_i]);
+  ProcessPolygon(raw_ind, npolys);
   return ptr;
 }
 
@@ -306,9 +472,9 @@ void Data::ParseBuffer(const char* ptr, const char* end) {
         ptr = ParseVertex(ptr, v);
         ++vertex_count;
       } else if (*ptr == 'n') {
-        ptr = ParseVertex(ptr, n);
+        ptr = ParseVertex(ptr, vn);
       } else if (*ptr == 't') {
-        ptr = ParseVertex(ptr, t);
+        ptr = ParseVertex(ptr, vt);
       }
     } else if (*ptr == 'f') {
       ++ptr;
@@ -404,8 +570,8 @@ inline void Data::Flush() {
   std::vector<Index>().swap(indices);
   std::vector<unsigned int>().swap(w_indices);
 
-  std::vector<float>().swap(n);
-  std::vector<float>().swap(t);
+  std::vector<float>().swap(vn);
+  std::vector<float>().swap(vt);
   std::vector<float>().swap(v);
 
   std::string().swap(dir_path);

@@ -3,7 +3,6 @@
 #include <QDir>
 #include <QFileDialog>
 #include <cmath>
-#include <QDebug>
 
 namespace Obj {
 

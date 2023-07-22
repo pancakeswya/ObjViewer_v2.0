@@ -265,7 +265,7 @@ void Viewer::OnScreenButtonClicked() {
 
   QStringList mimeTypes;
   const QList<QByteArray> baMimeTypes = QImageWriter::supportedMimeTypes();
-  for (const QByteArray &bf : baMimeTypes) {
+  for (const QByteArray& bf : baMimeTypes) {
     mimeTypes.append(QLatin1String(bf));
   }
   fileDialog.setMimeTypeFilters(mimeTypes);

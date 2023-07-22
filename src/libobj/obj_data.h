@@ -10,9 +10,9 @@ namespace Obj {
 enum class Status : short int { noExc, invalidFile, noFile };
 
 struct Index {
-  unsigned int f;
-  unsigned int n;
-  unsigned int t;
+  unsigned int fv;
+  unsigned int fn;
+  unsigned int ft;
 };
 
 struct NewMtl {
@@ -44,8 +44,8 @@ struct Data {
   std::vector<Index> indices;
   std::vector<unsigned int> w_indices;
 
-  std::vector<float> n;
-  std::vector<float> t;
+  std::vector<float> vn;
+  std::vector<float> vt;
   std::vector<float> v;
 
   float max[3];
@@ -68,6 +68,7 @@ struct Data {
   const char* ParseUsemtl(const char* ptr);
   const char* ParseFacet(const char* ptr);
   const char* ParseVertex(const char* ptr, std::vector<float>& vertices);
+  void ProcessPolygon(const std::vector<Index>& raw_ind, unsigned int npolys);
   static constexpr unsigned int bufferSize = 65536;
 
  private:
