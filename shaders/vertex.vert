@@ -11,13 +11,14 @@ out vec2 tex;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+//uniform mat4 matNormal;
 
 void main() {
-  gl_Position =  projection * view  * model * vec4(position,1.0);
+    gl_Position =  projection * view  * model * vec4(position,1.0);
 
-  mat3 matNormal = mat3(transpose(inverse(model)));
-  pos = vec3(view  * model * vec4(position, 1.0));
-  norm = matNormal * normal;
+    mat3 matNormal = mat3(transpose(inverse(view * model)));
+    pos = vec3(view  * model * vec4(position, 1.0));
+    norm = normalize(matNormal * normal);
 
-  tex = texCoords;
+    tex = texCoords;
 }

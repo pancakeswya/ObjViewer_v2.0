@@ -150,9 +150,7 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
     }
     // triangulate polygon with earcut method
   } else if (npolys > 4) {
-    Index i0 = raw_ind[0];
-    Index i0_2 = i0;
-
+    Index i0, i0_2;
     // Find the normal axis of the polygon using Newell's method
     Point3D n1{};
     for (size_t k = 0; k < npolys; ++k) {

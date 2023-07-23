@@ -139,9 +139,9 @@ void Loader::VaoCreate() {
 
   m_program->setUniformValue("use_texture", use_textures);
   m_program->setUniformValue("use_normals", use_normals);
-  m_program->setUniformValue(
-      "viewPos", QVector3D(-m_vMat.constData()[12], -m_vMat.constData()[13],
-                           -m_vMat.constData()[14]));
+//  m_program->setUniformValue(
+//      "viewPos", QVector3D(-m_vMat.constData()[12], -m_vMat.constData()[13],
+//                           -m_vMat.constData()[14]));
 
   m_vao.release();
   m_vbo.release();
@@ -236,8 +236,8 @@ void Loader::resizeGL(int width, int height) {
   GLfloat mid_size_z = (m_obj.min_vertex[2] + m_obj.max_vertex[2]) / 2.0f;
   GLfloat max_size = std::max(std::max(size_x, size_y), size_z);
   GLfloat aspectratio = GLfloat(width) / GLfloat(height);
+  QVector3D center(mid_size_x, mid_size_y, mid_size_z);
   if (m_proj_type == CENTRAL) {
-    QVector3D center(mid_size_x, mid_size_y, mid_size_z);
     m_vMat.lookAt(QVector3D(center.x(), center.y(), center.z() + max_size),
                   center, QVector3D(0.0f, 1.0f, 0.0f));
     m_pMat.perspective(100.0, aspectratio, 0.01f * max_size, 100.0f * max_size);
@@ -245,6 +245,10 @@ void Loader::resizeGL(int width, int height) {
     m_pMat.ortho(-max_size * aspectratio, max_size * aspectratio, -max_size,
                  max_size, -100.0f * max_size, 100.0f * max_size);
   }
+  m_program->bind();
+  m_program->setUniformValue("lightPos", QVector3D(center.x(), center.y(), center.z() + max_size*3));
+  m_program->setUniformValue("viewPos", center);
+  m_program->release();
 }
 
 void Loader::paintGL() {
@@ -261,6 +265,9 @@ void Loader::paintGL() {
   glUniformMatrix4fv(m_viewUniform, 1, GL_FALSE, m_vMat.constData());
   glUniformMatrix4fv(m_modelUniform, 1, GL_FALSE,
                      (m_mMatMove * m_mMatRotate * m_mMatZoom).constData());
+//  GLint matNorm = m_program->uniformLocation("matNormal");
+//  glUniformMatrix4fv(matNorm, 1, GL_FALSE,
+//                     (((m_mMatMove * m_mMatRotate * m_mMatZoom)*m_vMat).inverted().transposed()).constData());
 
   m_program->setUniformValue(m_colorUniform, m_color_line);
 
