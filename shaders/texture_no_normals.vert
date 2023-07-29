@@ -8,7 +8,7 @@ out vec2 tex;
 uniform mat4 pvm;
 
 void main() {
-    gl_Position =  pvm * vec4(position,1.0);
+  gl_Position = pvm * vec4(position, 1.0);
 
-    tex = texCoords;
+  tex = texCoords;
 }
