@@ -19,7 +19,6 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   void Rotate(float, int);
   void Zoom(float);
   void Move(float, int);
-  void InitProgram();
   void SetLineSize(float);
   void SetPointSize(float);
   void SetColorPoint(const QColor&);
@@ -44,8 +43,9 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   void initializeGL() override;
   void resizeGL(int, int) override;
   void paintGL() override;
-  void VaoCreate();
-  void VaoDestroy();
+  std::pair<const char*, const char*> GetShadersPaths();
+  void ProgramCreate();
+  void ProgramDestroy();
 
  private:
   enum ProjType { PARALLEL, CENTRAL };
@@ -53,9 +53,9 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   int m_point_type{};
   int m_proj_type;
   int m_model_view_type{};
-  GLint m_projUniform;
-  GLint m_viewUniform;
-  GLint m_modelUniform;
+  GLint m_pvmUniform;
+  GLint m_vmUniform;
+  GLint m_matNormalUniform;
   GLint m_colorUniform;
   GLfloat m_point_size;
   GLfloat m_line_size;

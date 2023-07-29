@@ -8,12 +8,10 @@
 namespace Obj {
 
 struct Material {
+  QOpenGLTexture map_ka;
   QOpenGLTexture map_kd;
-  QOpenGLTexture map_Ns;
-  QOpenGLTexture map_bump;
-  long int illum{};
+  QOpenGLTexture map_ks;
   float Ns{};
-  float Ni{};
   float d{};
   float Ka[3]{};
   float Kd[3]{};
@@ -57,9 +55,9 @@ struct Mesh {
 };
 
 inline Material::Material()
-    : map_kd(QOpenGLTexture::Target2D),
-      map_Ns(QOpenGLTexture::Target2D),
-      map_bump(QOpenGLTexture::Target2D) {}
+    : map_ka(QOpenGLTexture::Target2D),
+      map_kd(QOpenGLTexture::Target2D),
+      map_ks(QOpenGLTexture::Target2D) {}
 
 inline Mesh::~Mesh() { delete[] mtl; }
 

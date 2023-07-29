@@ -17,11 +17,7 @@ Loader::Loader(QWidget* parent)
       m_color_point(0.7f, 0.7f, 0.7f),
       m_color_bg(Qt::black) {}
 
-Loader::~Loader() {
-  VaoDestroy();
-  m_program->removeAllShaders();
-  m_program->deleteLater();
-}
+Loader::~Loader() { ProgramDestroy(); }
 
 void Loader::UpdateFramebuffer() {
   m_frame = grabFramebuffer()
@@ -30,20 +26,21 @@ void Loader::UpdateFramebuffer() {
 }
 
 Status Loader::Open(const QString& path) {
-  VaoDestroy();
+  ProgramDestroy();
   m_obj.Destroy();
   auto stat = m_obj.Open(path.toStdString());
-  VaoCreate();
+  ProgramCreate();
   resizeGL(width(), height());
   update();
   return stat;
 }
 
-void Loader::VaoDestroy() {
+void Loader::ProgramDestroy() {
   makeCurrent();
   m_vao.destroy();
   m_vbo.destroy();
   m_ebo.destroy();
+  m_program->deleteLater();
 }
 
 void Loader::Rotate(float angle, int axis) {
@@ -70,31 +67,41 @@ void Loader::Move(float dist, int axis) {
   update();
 }
 
-void Loader::InitProgram() {
+std::pair<const char*, const char*> Loader::GetShadersPaths() {
+  if (m_model_view_type == 2 && m_obj.HasTextures()) {
+    if (m_obj.HasNormals()) {
+      return std::make_pair(":/shaders/texture.vert", ":/shaders/texture.frag");
+    } else {
+      return std::make_pair(":/shaders/texture_no_normals.vert",
+                            ":/shaders/texture_no_normals.frag");
+    }
+  } else if (m_model_view_type && m_obj.HasNormals()) {
+    return std::make_pair(":/shaders/solid.vert", ":/shaders/solid.frag");
+  }
+  return std::make_pair(":/shaders/wireframe.vert", ":/shaders/wireframe.frag");
+}
+
+void Loader::ProgramCreate() {
   m_program = new QOpenGLShaderProgram(this);
 
+  auto shaders_paths = GetShadersPaths();
+
   m_program->addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                     ":/shaders/vertex.vert");
+                                     shaders_paths.first);
   m_program->addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                     ":/shaders/fragment.frag");
+                                     shaders_paths.second);
 
   if (!m_program->link()) {
     close();
   }
   m_program->bind();
-
-  m_projUniform = m_program->uniformLocation("projection");
-  m_viewUniform = m_program->uniformLocation("view");
-  m_modelUniform = m_program->uniformLocation("model");
+  m_pvmUniform = m_program->uniformLocation("pvm");
+  m_vmUniform = m_program->uniformLocation("vm");
+  m_matNormalUniform = m_program->uniformLocation("matNormal");
   m_colorUniform = m_program->uniformLocation("color");
-
-  m_program->release();
-}
-
-void Loader::VaoCreate() {
-  bool use_normals = false, use_textures = false;
-
-  m_program->bind();
+  m_program->setUniformValue("texture_a", 0);
+  m_program->setUniformValue("texture_d", 1);
+  m_program->setUniformValue("texture_s", 2);
 
   m_vao.create();
   m_vao.bind();
@@ -118,13 +125,11 @@ void Loader::VaoCreate() {
 
     m_program->setAttributeBuffer("position", GL_FLOAT, 0, 3, stride);
     if (m_obj.HasTextures()) {
-      use_textures = (m_model_view_type == 2);
       m_program->enableAttributeArray("texCoords");
       m_program->setAttributeBuffer("texCoords", GL_FLOAT, 3 * sizeof(float), 2,
                                     stride);
     }
     if (m_obj.HasNormals()) {
-      use_normals = true;
       m_program->enableAttributeArray("normal");
       m_program->setAttributeBuffer("normal", GL_FLOAT, 5 * sizeof(float), 3,
                                     stride);
@@ -137,16 +142,9 @@ void Loader::VaoCreate() {
                    m_obj.indicesw.size() * sizeof(unsigned int));
   }
 
-  m_program->setUniformValue("use_texture", use_textures);
-  m_program->setUniformValue("use_normals", use_normals);
-//  m_program->setUniformValue(
-//      "viewPos", QVector3D(-m_vMat.constData()[12], -m_vMat.constData()[13],
-//                           -m_vMat.constData()[14]));
-
   m_vao.release();
   m_vbo.release();
   m_ebo.release();
-  m_program->release();
 }
 
 void Loader::SetLineSize(float size) {
@@ -198,8 +196,9 @@ void Loader::SetColorBg(const QColor& color_bg) {
 
 void Loader::SetModelViewType(int view_type) {
   m_model_view_type = view_type;
-  VaoDestroy();
-  VaoCreate();
+  ProgramDestroy();
+  ProgramCreate();
+  resizeGL(width(), height());
   update();
 }
 
@@ -221,8 +220,10 @@ void Loader::SetPointType(int type) {
 void Loader::initializeGL() {
   initializeOpenGLFunctions();
   glEnable(GL_DEPTH_TEST);
-  InitProgram();
-  VaoCreate();
+  glEnable(GL_CULL_FACE);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  ProgramCreate();
 }
 
 void Loader::resizeGL(int width, int height) {
@@ -245,8 +246,8 @@ void Loader::resizeGL(int width, int height) {
     m_pMat.ortho(-max_size * aspectratio, max_size * aspectratio, -max_size,
                  max_size, -100.0f * max_size, 100.0f * max_size);
   }
-  m_program->bind();
-  m_program->setUniformValue("lightPos", QVector3D(center.x(), center.y(), center.z() + max_size*3));
+  m_program->setUniformValue(
+      "lightPos", QVector3D(center.x(), center.y(), center.z() + max_size * 3));
   m_program->setUniformValue("viewPos", center);
   m_program->release();
 }
@@ -260,43 +261,36 @@ void Loader::paintGL() {
 
   m_program->bind();
   m_vao.bind();
-
-  glUniformMatrix4fv(m_projUniform, 1, GL_FALSE, m_pMat.constData());
-  glUniformMatrix4fv(m_viewUniform, 1, GL_FALSE, m_vMat.constData());
-  glUniformMatrix4fv(m_modelUniform, 1, GL_FALSE,
-                     (m_mMatMove * m_mMatRotate * m_mMatZoom).constData());
-//  GLint matNorm = m_program->uniformLocation("matNormal");
-//  glUniformMatrix4fv(matNorm, 1, GL_FALSE,
-//                     (((m_mMatMove * m_mMatRotate * m_mMatZoom)*m_vMat).inverted().transposed()).constData());
+  QMatrix4x4 vm = m_vMat * m_mMatMove * m_mMatRotate * m_mMatZoom;
+  glUniformMatrix4fv(m_pvmUniform, 1, GL_FALSE, (m_pMat * vm).constData());
+  glUniformMatrix4fv(m_vmUniform, 1, GL_FALSE, vm.constData());
+  glUniformMatrix4fv(m_matNormalUniform, 1, GL_FALSE,
+                     vm.inverted().transposed().constData());
 
   m_program->setUniformValue(m_colorUniform, m_color_line);
 
   if (m_model_view_type && (m_obj.HasNormals() || m_obj.HasTextures())) {
     size_t prev_offset = 0;
-    bool is_textured = (m_model_view_type == 2);
     for (auto& mtl : m_obj.usemtl) {
-      if (m_model_view_type == 2) {
-        bool mtl_has_texture = m_obj.mtl[mtl.index].map_kd.isCreated();
-        if (is_textured != mtl_has_texture) {
-          m_program->setUniformValue("use_texture", mtl_has_texture);
-          is_textured = mtl_has_texture;
-        }
-      }
       m_program->setUniformValue("Ks", &m_obj.mtl[mtl.index].Ka);
       m_program->setUniformValue("Kd", m_obj.mtl[mtl.index].Kd[0]);
       m_program->setUniformValue("Ks", &m_obj.mtl[mtl.index].Ks);
       m_program->setUniformValue("Ke", &m_obj.mtl[mtl.index].Ke);
       m_program->setUniformValue("specPower", m_obj.mtl[mtl.index].Ns);
       m_program->setUniformValue("opacity", m_obj.mtl[mtl.index].d);
-      if (is_textured) {
-        m_obj.mtl[mtl.index].map_kd.bind();
+      if (m_model_view_type == 2) {
+        m_obj.mtl[mtl.index].map_ka.bind(0);
+        m_obj.mtl[mtl.index].map_kd.bind(1);
+        m_obj.mtl[mtl.index].map_ks.bind(2);
       }
       glDrawElements(GL_TRIANGLES, mtl.offset - prev_offset, GL_UNSIGNED_INT,
                      (void*)(prev_offset * sizeof(GLuint)));
 
       prev_offset = mtl.offset;
-      if (is_textured) {
-        m_obj.mtl[mtl.index].map_kd.release();
+      if (m_model_view_type == 2) {
+        m_obj.mtl[mtl.index].map_ka.release(0);
+        m_obj.mtl[mtl.index].map_kd.release(1);
+        m_obj.mtl[mtl.index].map_ks.release(2);
       }
     }
   } else {

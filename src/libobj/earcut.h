@@ -850,5 +850,4 @@ std::vector<N> earcut(const Polygon& poly) {
 }
 }  // namespace mapbox
 
-
-#endif // EARCUT_H_
+#endif  // EARCUT_H_

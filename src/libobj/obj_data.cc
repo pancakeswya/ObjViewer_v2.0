@@ -1,11 +1,12 @@
 #include "obj_data.h"
-#include "earcut.h"
 
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <map>
+
+#include "earcut.h"
 
 namespace Obj {
 
@@ -377,8 +378,6 @@ const char* Data::ParseMtl(const char* p) {
         case 'N':
           if (ptr[1] == 's') {
             ptr = ReadMtlSingle(ptr + 2, new_mtl.Ns);
-          } else if (ptr[1] == 'i') {
-            ptr = ReadMtlSingle(ptr + 2, new_mtl.Ni);
           }
           break;
         case 'T':
@@ -396,13 +395,6 @@ const char* Data::ParseMtl(const char* p) {
             found_d = true;
           }
           break;
-        case 'i':
-          ptr++;
-          if (ptr[0] == 'l' && ptr[1] == 'l' && ptr[2] == 'u' &&
-              ptr[3] == 'm' && IsSpace(ptr[4])) {
-            ptr = ReadMtlInt(ptr + 4, new_mtl.illum);
-          }
-          break;
         case 'm':
           ptr++;
           if (ptr[0] == 'a' && ptr[1] == 'p' && ptr[2] == '_') {
@@ -410,23 +402,19 @@ const char* Data::ParseMtl(const char* p) {
             std::string* map_ptr = nullptr;
             if (*ptr == 'K') {
               ptr++;
-              if (ptr[0] == 'd' && IsSpace(ptr[1])) {
+              if (ptr[0] == 'a' && IsSpace(ptr[1])) {
+                ++ptr;
+                new_mtl.map_ka = GetName(&ptr);
+                map_ptr = &new_mtl.map_ka;
+              } else if (ptr[0] == 'd' && IsSpace(ptr[1])) {
                 ++ptr;
                 new_mtl.map_kd = GetName(&ptr);
                 map_ptr = &new_mtl.map_kd;
-              }
-            } else if (*ptr == 'N') {
-              ++ptr;
-              if (ptr[0] == 's' && IsSpace(ptr[1])) {
+              } else if (ptr[0] == 's' && IsSpace(ptr[1])) {
                 ++ptr;
-                new_mtl.map_Ns = GetName(&ptr);
-                map_ptr = &new_mtl.map_Ns;
+                new_mtl.map_ks = GetName(&ptr);
+                map_ptr = &new_mtl.map_ks;
               }
-            } else if ((ptr[0] == 'b' || ptr[0] == 'B') && ptr[1] == 'u' &&
-                       ptr[2] == 'm' && ptr[3] == 'p' && IsSpace(ptr[4])) {
-              ptr += 4;
-              new_mtl.map_bump = GetName(&ptr);
-              map_ptr = &new_mtl.map_bump;
             }
             if (map_ptr && std::filesystem::path(*map_ptr).is_relative()) {
               *map_ptr = dir_path + *map_ptr;

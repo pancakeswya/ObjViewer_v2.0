@@ -17,12 +17,10 @@ struct Index {
 
 struct NewMtl {
   std::string name;
+  std::string map_ka;
   std::string map_kd;
-  std::string map_Ns;
-  std::string map_bump;
-  long int illum;
+  std::string map_ks;
   float Ns;
-  float Ni;
   float d;
   float Ka[3];
   float Kd[3];
@@ -76,7 +74,7 @@ struct Data {
 };
 
 inline NewMtl::NewMtl()
-    : illum(1), Ns(32.0f), Ni(1.0f), d(1.0f), Kd{0.7f, 0.7f, 0.7f} {}
+    : Ns(32.0f), d(1.0f), Kd{0.7f, 0.7f, 0.7f} {}
 
 inline Data::Data()
     : max{std::numeric_limits<float>::min(), std::numeric_limits<float>::min(),

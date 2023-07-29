@@ -22,15 +22,20 @@ struct compare {
 using IndexMap = std::map<Index, unsigned int, compare>;
 
 void SetTexture(QOpenGLTexture& texture, const std::string& path) {
+  QImage tex_image;
   if (!path.empty()) {
-    QImage tex_image(path.c_str());
-    if (!tex_image.isNull()) {
-      texture.setData(tex_image.mirrored());
-      texture.setMinificationFilter(QOpenGLTexture::Nearest);
-      texture.setMagnificationFilter(QOpenGLTexture::Linear);
-      texture.setWrapMode(QOpenGLTexture::Repeat);
-    }
+    tex_image.load(path.c_str());
   }
+  if (tex_image.isNull()) {
+    // make it default color texture
+    QImage image(1, 1, QImage::Format_RGB32);
+    image.fill(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
+    tex_image = std::move(image);
+  }
+  texture.setData(tex_image.mirrored());
+  texture.setMinificationFilter(QOpenGLTexture::Nearest);
+  texture.setMagnificationFilter(QOpenGLTexture::Linear);
+  texture.setWrapMode(QOpenGLTexture::Repeat);
 }
 
 }  // namespace
@@ -58,11 +63,10 @@ void Mesh::DataToObj(Data& data) {
     mtl = new Material[data.mtl.size()];
 
     for (size_t i = 0; i < data.mtl.size() || i == 0; ++i) {
-      SetTexture(mtl[i].map_Ns, data.mtl[i].map_Ns);
+      SetTexture(mtl[i].map_ka, data.mtl[i].map_ka);
       SetTexture(mtl[i].map_kd, data.mtl[i].map_kd);
-      SetTexture(mtl[i].map_bump, data.mtl[i].map_bump);
-      std::memcpy(&mtl[i].illum, &data.mtl[i].illum,
-                  sizeof(long int) + 15 * sizeof(float));
+      SetTexture(mtl[i].map_ks, data.mtl[i].map_ks);
+      std::memcpy(&mtl[i].Ns, &data.mtl[i].Ns, 14 * sizeof(float));
     }
     // create vertex for each unique index
     unsigned int next_combined_idx = 0, combined_idx = 0;
