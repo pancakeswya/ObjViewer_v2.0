@@ -17,6 +17,9 @@ uniform vec3 color;
 
 void main() {
   vec3 lightDir = normalize(lightPos - pos.xyz);
+  if (!gl_FrontFacing) {
+      lightDir = -lightDir;
+  }
   vec3 viewDir = normalize(viewPos - pos.xyz);
   vec3 reflectDir = reflect(-lightDir, norm);
 

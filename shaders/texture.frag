@@ -24,6 +24,10 @@ void main() {
   vec4 map_spec = texture2D(texture_s, tex);
 
   vec3 lightDir = normalize(lightPos - pos.xyz);
+  if (!gl_FrontFacing) {
+      lightDir = -lightDir;
+  }
+
   vec3 viewDir = normalize(viewPos - pos.xyz);
   vec3 reflectDir = reflect(-lightDir, norm);
 
@@ -33,4 +37,5 @@ void main() {
   gl_FragColor = vec4(Ke + Ka * map_amb.rgb + diff * (Kd + map_diff.rgb) +
                           Ks * spec * map_spec.rgb,
                       opacity * map_diff.a);
+
 }

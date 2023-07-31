@@ -72,12 +72,6 @@ inline const char* ReadMtlTriple(const char* ptr, float triple[3]) noexcept {
   return ptr;
 }
 
-inline const char* ReadMtlInt(const char* ptr, long int& val) noexcept {
-  char* end = nullptr;
-  val = std::strtol(ptr, &end, 10);
-  return end;
-}
-
 struct Point3D {
   float x, y, z;
 };
@@ -111,18 +105,28 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
                           unsigned int npolys) {
   // quad to 2 triangles
   if (npolys == 4) {
-    float v0x = v[raw_ind[0].fv * 3 + 0];
-    float v0y = v[raw_ind[0].fv * 3 + 1];
-    float v0z = v[raw_ind[0].fv * 3 + 2];
-    float v1x = v[raw_ind[1].fv * 3 + 0];
-    float v1y = v[raw_ind[1].fv * 3 + 1];
-    float v1z = v[raw_ind[1].fv * 3 + 2];
-    float v2x = v[raw_ind[2].fv * 3 + 0];
-    float v2y = v[raw_ind[2].fv * 3 + 1];
-    float v2z = v[raw_ind[2].fv * 3 + 2];
-    float v3x = v[raw_ind[3].fv * 3 + 0];
-    float v3y = v[raw_ind[3].fv * 3 + 1];
-    float v3z = v[raw_ind[3].fv * 3 + 2];
+    size_t vi0 = size_t(raw_ind[0].fv);
+    size_t vi1 = size_t(raw_ind[1].fv);
+    size_t vi2 = size_t(raw_ind[2].fv);
+    size_t vi3 = size_t(raw_ind[3].fv);
+
+    if (((3 * vi0 + 2) >= v.size()) || ((3 * vi1 + 2) >= v.size()) ||
+        ((3 * vi2 + 2) >= v.size()) || ((3 * vi3 + 2) >= v.size())) {
+      m_stat = Status::invalidFile;
+      return;
+    }
+    float v0x = v[vi0 * 3 + 0];
+    float v0y = v[vi0 * 3 + 1];
+    float v0z = v[vi0 * 3 + 2];
+    float v1x = v[vi1 * 3 + 0];
+    float v1y = v[vi1 * 3 + 1];
+    float v1z = v[vi1 * 3 + 2];
+    float v2x = v[vi2 * 3 + 0];
+    float v2y = v[vi2 * 3 + 1];
+    float v2z = v[vi2 * 3 + 2];
+    float v3x = v[vi3 * 3 + 0];
+    float v3y = v[vi3 * 3 + 1];
+    float v3z = v[vi3 * 3 + 2];
 
     float e02x = v2x - v0x;
     float e02y = v2y - v0y;
@@ -233,7 +237,7 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
       polyline.emplace_back(std::make_pair(loc.x, loc.y));
     }
     polygon.push_back(polyline);
-    std::vector<unsigned int> order = mapbox::earcut<unsigned int>(polygon);
+    std::vector<unsigned int> order = mapbox::earcut(polygon);
     if (order.size() % 3 != 0) {
       m_stat = Status::invalidFile;
       return;
