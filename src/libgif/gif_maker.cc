@@ -13,7 +13,7 @@ void GifMaker::run() {
   for (int timer = 0; timer <= 5000; timer += delay) {
     emit MakinGif();
     GifWriteFrame(&gif_wr,
-                  m_frame.convertToFormat(QImage::Format_Indexed8)
+                  frame_.convertToFormat(QImage::Format_Indexed8)
                       .convertToFormat(QImage::Format_RGBA8888)
                       .constBits(),
                   640, 480, 1, 8, false);

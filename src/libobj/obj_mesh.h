@@ -23,8 +23,12 @@ struct Material {
 };
 
 struct Mesh {
+  bool has_textures{};
+  bool has_normals{};
+
   unsigned int facet_count{};
   unsigned int vertex_count{};
+  unsigned int stride{};
 
   float max_vertex[3]{};
   float min_vertex[3]{};
@@ -40,18 +44,11 @@ struct Mesh {
   ~Mesh();
 
   Status Open(const std::string& path);
-  bool HasTextures() noexcept;
-  bool HasNormals() noexcept;
-  unsigned int GetStride() const noexcept;
-  void Destroy();
+  void Clear();
 
  protected:
   // convert data to prepared mesh
   void DataToObj(Data& obj_data);
-
- private:
-  bool m_has_textures{};
-  bool m_has_normals{};
 };
 
 inline Material::Material()
@@ -61,23 +58,8 @@ inline Material::Material()
 
 inline Mesh::~Mesh() { delete[] mtl; }
 
-inline bool Mesh::HasNormals() noexcept { return m_has_normals; }
-
-inline bool Mesh::HasTextures() noexcept { return m_has_textures; }
-
-inline unsigned int Mesh::GetStride() const noexcept {
-  if (m_has_normals && m_has_textures) {
-    return 8 * sizeof(float);
-  } else if (!m_has_normals) {
-    return 5 * sizeof(float);
-  } else if (m_has_normals) {
-    return 6 * sizeof(float);
-  } else {
-    return 0 * sizeof(float);
-  }
-}
-
 inline Status Mesh::Open(const std::string& path) {
+  Clear();
   auto data = new Data();
   auto stat = Status::noExc;
   if (data->FromFile(path)) {
@@ -89,7 +71,7 @@ inline Status Mesh::Open(const std::string& path) {
   return stat;
 }
 
-inline void Mesh::Destroy() {
+inline void Mesh::Clear() {
   facet_count = vertex_count = 0;
   max_vertex[0] = min_vertex[0] = 0.0f;
   max_vertex[1] = min_vertex[1] = 0.0f;

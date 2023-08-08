@@ -10,13 +10,13 @@ class GifMaker : public QThread {
   GifMaker(QImage &frame);
 
  private:
-  QImage &m_frame;
+  QImage &frame_;
   void run() override;
  signals:
   void MakinGif();
   void GifDone();
 };
 
-inline GifMaker::GifMaker(QImage &frame) : m_frame(frame) {}
+inline GifMaker::GifMaker(QImage &frame) : frame_(frame) {}
 
 #endif  // GIFMAKER_H

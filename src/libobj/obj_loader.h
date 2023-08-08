@@ -49,32 +49,32 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
 
  private:
   enum ProjType { PARALLEL, CENTRAL };
-  bool m_line_type{};
-  int m_point_type{};
-  int m_proj_type;
-  int m_model_view_type{};
-  GLint m_pvmUniform;
-  GLint m_vmUniform;
-  GLint m_matNormalUniform;
-  GLint m_colorUniform;
-  GLfloat m_point_size;
-  GLfloat m_line_size;
-  Mesh m_obj{};
-  QOpenGLBuffer m_vbo;
-  QOpenGLBuffer m_ebo;
-  QVector3D m_color_line;
-  QVector3D m_color_point;
-  QColor m_color_bg;
-  QOpenGLShaderProgram* m_program{};
-  QOpenGLVertexArrayObject m_vao;
-  QMatrix4x4 m_pMat;
-  QMatrix4x4 m_vMat;
-  QMatrix4x4 m_mMatRotate;
-  QMatrix4x4 m_mMatMove;
-  QMatrix4x4 m_mMatZoom;
-  QVector3D m_angles{};
-  QVector3D m_moves{};
-  QImage m_frame;
+  bool line_type_{};
+  int point_type_{};
+  int proj_type_;
+  int model_view_type_{};
+  GLint pvmUniform_;
+  GLint vmUniform_;
+  GLint matNormalUniform_;
+  GLint colorUniform_;
+  GLfloat point_size_;
+  GLfloat line_size_;
+  Mesh mesh_{};
+  QOpenGLBuffer vbo_;
+  QOpenGLBuffer ebo_;
+  QVector3D color_line_;
+  QVector3D color_point_;
+  QColor color_bg_;
+  QOpenGLShaderProgram* program_{};
+  QOpenGLVertexArrayObject vao_;
+  QMatrix4x4 pMat_;
+  QMatrix4x4 vMat_;
+  QMatrix4x4 mMatRotate_;
+  QMatrix4x4 mMatMove_;
+  QMatrix4x4 mMatZoom_;
+  QVector3D angles_{};
+  QVector3D moves_{};
+  QImage frame_;
 };
 
 }  // namespace Obj

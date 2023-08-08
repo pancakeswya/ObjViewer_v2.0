@@ -43,8 +43,8 @@ void SetTexture(QOpenGLTexture& texture, const std::string& path) {
 void Mesh::DataToObj(Data& data) {
   IndexMap index_map;
 
-  m_has_textures = (data.vt.size() != 0);
-  m_has_normals = (data.vn.size() != 0);
+  has_textures = (data.vt.size() != 0);
+  has_normals = (data.vn.size() != 0);
 
   facet_count = data.facet_count;
   vertex_count = data.vertex_count;
@@ -80,11 +80,11 @@ void Mesh::DataToObj(Data& data) {
         vertices.push_back(data.v[i_v]);
         vertices.push_back(data.v[i_v + 1]);
         vertices.push_back(data.v[i_v + 2]);
-        if (m_has_textures) {
+        if (has_textures) {
           vertices.push_back(data.vt[i_t]);
           vertices.push_back(data.vt[i_t + 1]);
         }
-        if (m_has_normals) {
+        if (has_normals) {
           vertices.push_back(data.vn[i_n]);
           vertices.push_back(data.vn[i_n + 1]);
           vertices.push_back(data.vn[i_n + 2]);
@@ -94,7 +94,13 @@ void Mesh::DataToObj(Data& data) {
       indices.push_back(combined_idx);
     }
   }
-
+  if (has_normals && has_textures) {
+    stride = 8 * sizeof(float);
+  } else if (!has_normals) {
+    stride = 5 * sizeof(float);
+  } else if (has_normals) {
+    stride = 6 * sizeof(float);
+  }
   indicesw = std::move(data.w_indices);
   verticesw = std::move(data.v);
 }
