@@ -115,23 +115,21 @@ void Loader::ProgramCreate() {
 
   program_->enableAttributeArray("position");
   if (model_view_type_ && (mesh_.has_normals || mesh_.has_textures)) {
-    unsigned int stride = mesh_.stride;
-
     vbo_.allocate(mesh_.vertices.data(),
                    mesh_.vertices.size() * sizeof(float));
     ebo_.allocate(mesh_.indices.data(),
                    mesh_.indices.size() * sizeof(unsigned int));
 
-    program_->setAttributeBuffer("position", GL_FLOAT, 0, 3, stride);
+    program_->setAttributeBuffer("position", GL_FLOAT, 0, 3, mesh_.stride);
     if (mesh_.has_textures) {
       program_->enableAttributeArray("texCoords");
       program_->setAttributeBuffer("texCoords", GL_FLOAT, 3 * sizeof(float), 2,
-                                    stride);
+                                   mesh_.stride);
     }
     if (mesh_.has_normals) {
       program_->enableAttributeArray("normal");
       program_->setAttributeBuffer("normal", GL_FLOAT, 5 * sizeof(float), 3,
-                                    stride);
+                                   mesh_.stride);
     }
   } else {
     program_->setAttributeBuffer("position", GL_FLOAT, 0, 3);
