@@ -5,7 +5,7 @@
 #include <QMainWindow>
 #include <QSettings>
 
-#include "../libgif/gif_maker.h"
+namespace obj {
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,29 +26,20 @@ class Viewer : public QMainWindow {
   void SaveSettings();
   void LoadSettings();
  private slots:
-  void OnPushButtonOpenObjClicked();
-  void OnSwitchLineTypeCurrentIndexChanged(int);
-  void OnSwitchProjectionCurrentIndexChanged(int);
-  void OnLineWidthSpinBoxValueChanged(int);
-  void OnSwitchTypeVertexCurrentIndexChanged(int);
-  void OnVertexSizeSpinBoxValueChanged(int);
-  void OnBgColorClicked();
-  void OnLineColorClicked();
-  void OnVertexColorClicked();
-  void OnZoomSpinBoxValueChanged(double);
-  void OnMoveSpinBoxXValueChanged(int);
-  void OnMoveSpinBoxYValueChanged(int);
-  void OnMoveSpinBoxZValueChanged(int);
-  void OnRotateSpinBoxXValueChanged(int);
-  void OnRotateSpinBoxYValueChanged(int);
-  void OnRotateSpinBoxZValueChanged(int);
-  void OnScreenButtonClicked();
-  void OnResetClicked();
-  void OnGifButtonClicked();
-  void OnComboBoxCurrentIndexChanged(int index);
-
+  void OnPushButtonOpenFileClicked();
+  void OnPushButtonBgColorClicked();
+  void OnPushButtonEdgeColorClicked();
+  void OnPushButtonVertexColorClicked();
+  void OnDoubleSpinBoxMoveValueChanged(double);
+  void OnSpinBoxRotateValueChanged(int);
+  void OnPushButtonScreenClicked();
+  void OnPushButtonResetClicked();
+  void OnPushButtonGifClicked();
  private:
-  Ui::Viewer* ui;
-  QSettings settings;
+  Ui::Viewer* ui_;
+  QSettings settings_;
 };
+
+} // namespace obj
+
 #endif  // VIEWER_H

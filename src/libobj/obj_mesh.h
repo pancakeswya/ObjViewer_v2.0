@@ -5,7 +5,7 @@
 
 #include "obj_data.h"
 
-namespace Obj {
+namespace obj {
 
 struct Material {
   QOpenGLTexture map_ka;
@@ -34,9 +34,9 @@ struct Mesh {
   float min_vertex[3]{};
 
   std::vector<unsigned int> indices;
-  std::vector<unsigned int> indicesw;
+  std::vector<unsigned int> edges;
   std::vector<float> vertices;
-  std::vector<float> verticesw;
+  std::vector<float> points;
   std::vector<UseMtl> usemtl;
   Material* mtl{};
 
@@ -78,8 +78,8 @@ inline void Mesh::Clear() {
   max_vertex[2] = min_vertex[2] = 0.0f;
   std::vector<unsigned int>().swap(indices);
   std::vector<float>().swap(vertices);
-  std::vector<unsigned int>().swap(indicesw);
-  std::vector<float>().swap(verticesw);
+  std::vector<unsigned int>().swap(edges);
+  std::vector<float>().swap(points);
   std::vector<UseMtl>().swap(usemtl);
   delete[] mtl;
   mtl = nullptr;

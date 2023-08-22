@@ -9,7 +9,7 @@
 
 #include "earcut.h"
 
-namespace Obj {
+namespace obj {
 
 namespace {
 
@@ -35,7 +35,7 @@ const char* SkipLine(const char* ptr) noexcept {
   return ++ptr;
 }
 
-unsigned long int FileSize(std::ifstream& file) noexcept {
+unsigned long int FileSize(std::ifstream& file) {
   long int p, n;
   p = file.tellg();
   file.seekg(0, std::ifstream::end);
@@ -48,7 +48,7 @@ unsigned long int FileSize(std::ifstream& file) noexcept {
   }
 }
 
-std::string GetName(const char** ptr) noexcept {
+std::string GetName(const char** ptr) {
   const char* p = *ptr;
   p = SkipSpace(p);
   std::string name;
@@ -77,26 +77,26 @@ struct Point3D {
   float x, y, z;
 };
 
-inline float GetLength(const Point3D& e) {
+inline float GetLength(const Point3D& e) noexcept {
   return std::sqrt(e.x * e.x + e.y * e.y + e.z * e.z);
 }
 
-inline Point3D Cross(const Point3D& v1, const Point3D& v2) {
+inline Point3D Cross(const Point3D& v1, const Point3D& v2) noexcept {
   return {v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
           v1.x * v2.y - v1.y * v2.x};
 }
 
-inline Point3D Normalize(const Point3D& e) {
+inline Point3D Normalize(const Point3D& e) noexcept {
   float inv_length = 1.0f / GetLength(e);
   return {e.x * inv_length, e.y * inv_length, e.z * inv_length};
 }
 
-inline float Dot(const Point3D& v1, const Point3D& v2) {
+inline float Dot(const Point3D& v1, const Point3D& v2) noexcept {
   return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
 }
 
 inline Point3D WorldToLocal(const Point3D& a, const Point3D& u,
-                            const Point3D& v, const Point3D& w) {
+                            const Point3D& v, const Point3D& w) noexcept {
   return {Dot(a, u), Dot(a, v), Dot(a, w)};
 }
 
@@ -106,10 +106,10 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
                           unsigned int npolys) {
   // quad to 2 triangles
   if (npolys == 4) {
-    size_t vi0 = size_t(raw_ind[0].fv);
-    size_t vi1 = size_t(raw_ind[1].fv);
-    size_t vi2 = size_t(raw_ind[2].fv);
-    size_t vi3 = size_t(raw_ind[3].fv);
+    auto vi0 = size_t(raw_ind[0].fv);
+    auto vi1 = size_t(raw_ind[1].fv);
+    auto vi2 = size_t(raw_ind[2].fv);
+    auto vi3 = size_t(raw_ind[3].fv);
 
     if (((3 * vi0 + 2) >= v.size()) || ((3 * vi1 + 2) >= v.size()) ||
         ((3 * vi2 + 2) >= v.size()) || ((3 * vi3 + 2) >= v.size())) {
@@ -161,11 +161,11 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
     Point3D n1{};
     for (size_t k = 0; k < npolys; ++k) {
       i0 = raw_ind[k % npolys];
-      size_t vi0 = size_t(i0.fv);
+      auto vi0 = size_t(i0.fv);
 
       size_t j = (k + 1) % npolys;
       i0_2 = raw_ind[j];
-      size_t vi0_2 = size_t(i0_2.fv);
+      auto vi0_2 = size_t(i0_2.fv);
 
       float v0x = v[vi0 * 3 + 0];
       float v0y = v[vi0 * 3 + 1];
@@ -222,7 +222,7 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
     // Fill polygon data(facevarying vertices).
     for (size_t k = 0; k < npolys; k++) {
       i0 = raw_ind[k];
-      size_t vi0 = size_t(i0.fv);
+      auto vi0 = size_t(i0.fv);
       if (3 * vi0 + 2 >= v.size()) {
         m_stat = Status::invalidFile;
         return;
@@ -279,7 +279,7 @@ const char* Data::ParseVertex(const char* ptr, std::vector<float>& array) {
 const char* Data::ParseFacet(const char* ptr) {
   char* end = nullptr;
   long int tmp_i;
-  unsigned int start_i = w_indices.size();
+  unsigned int start_i = edges.size();
   std::vector<Index> raw_ind;
   size_t npolys = 0;
   while (*ptr != '\n') {
@@ -325,16 +325,16 @@ const char* Data::ParseFacet(const char* ptr) {
       ptr = end;
     }
     // wireframe facets
-    if (w_indices.size() != start_i) {
-      w_indices.push_back(idx.fv);
+    if (edges.size() != start_i) {
+      edges.push_back(idx.fv);
     }
-    w_indices.push_back(idx.fv);
+    edges.push_back(idx.fv);
     // push parsed indices
     raw_ind.push_back(idx);
     ptr = SkipSpace(ptr);
     ++npolys;
   }
-  w_indices.push_back(w_indices[start_i]);
+  edges.push_back(edges[start_i]);
   ProcessPolygon(raw_ind, npolys);
   return ptr;
 }
@@ -521,7 +521,7 @@ void Data::ReadFile(const std::string& path) {
     }
     last = end;
     while (last > buffer) {
-      last--;
+      --last;
       if (*last == '\n') {
         break;
       }
@@ -559,7 +559,7 @@ inline void Data::Flush() {
   std::vector<NewMtl>().swap(mtl);
   std::vector<UseMtl>().swap(usemtl);
   std::vector<Index>().swap(indices);
-  std::vector<unsigned int>().swap(w_indices);
+  std::vector<unsigned int>().swap(edges);
 
   std::vector<float>().swap(vn);
   std::vector<float>().swap(vt);
@@ -568,4 +568,4 @@ inline void Data::Flush() {
   std::string().swap(dir_path);
 }
 
-}  // namespace Obj
+}  // namespace obj

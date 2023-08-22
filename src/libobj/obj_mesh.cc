@@ -3,8 +3,11 @@
 #include <QImage>
 #include <cstring>
 #include <map>
+#include <set>
+#include <thread>
+#include <future>
 
-namespace Obj {
+namespace obj {
 
 namespace {
 
@@ -20,6 +23,8 @@ struct compare {
 };
 
 using IndexMap = std::map<Index, unsigned int, compare>;
+
+using Edge = std::pair<unsigned int, unsigned int>;
 
 void SetTexture(QOpenGLTexture& texture, const std::string& path) {
   QImage tex_image;
@@ -38,20 +43,42 @@ void SetTexture(QOpenGLTexture& texture, const std::string& path) {
   texture.setWrapMode(QOpenGLTexture::Repeat);
 }
 
+std::vector<unsigned int> GetUniqueEdges(const std::vector<unsigned int>& edges) {
+    std::vector<unsigned int> unique_edges;
+    std::set<Edge> edges_set;
+    for(size_t i = 0; i < edges.size();i += 2) {
+        Edge edge;
+        if (edges[i] > edges[i + 1]) {
+            edge = {edges[i], edges[i+1]};
+        } else {
+            edge = {edges[i + 1], edges[i]};
+        }
+        edges_set.insert(std::move(edge));
+    }
+    unique_edges.reserve(edges_set.size());
+    for (auto&[start, finish] : edges_set) {
+        unique_edges.emplace_back(start);
+        unique_edges.emplace_back(finish);
+    }
+    return unique_edges;
+}
+
 }  // namespace
+
 
 void Mesh::DataToObj(Data& data) {
   IndexMap index_map;
 
-  has_textures = (data.vt.size() != 0);
-  has_normals = (data.vn.size() != 0);
+  has_textures = !data.vt.empty();
+  has_normals = !data.vn.empty();
 
   facet_count = data.facet_count;
   vertex_count = data.vertex_count;
 
   std::move(data.max, data.max + 3, max_vertex);
   std::move(data.min, data.min + 3, min_vertex);
-
+  auto future = std::async(std::launch::async, &GetUniqueEdges, data.edges);
+  edges = future.get();
   // if mesh not made up by lines
   if (data.indices.size() != 2 * facet_count) {
     vertices.reserve(data.indices.size());
@@ -101,8 +128,7 @@ void Mesh::DataToObj(Data& data) {
   } else if (has_normals) {
     stride = 6 * sizeof(float);
   }
-  indicesw = std::move(data.w_indices);
-  verticesw = std::move(data.v);
+  points = std::move(data.v);
 }
 
-}  // namespace Obj
+}  // namespace obj

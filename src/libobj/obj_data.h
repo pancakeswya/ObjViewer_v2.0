@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace Obj {
+namespace obj {
 
 enum class Status : short int { noExc, invalidFile, noFile };
 
@@ -22,10 +22,10 @@ struct NewMtl {
   std::string map_ks;
   float Ns;
   float d;
-  float Ka[3];
+  float Ka[3]{};
   float Kd[3];
-  float Ks[3];
-  float Ke[3];
+  float Ks[3]{};
+  float Ke[3]{};
   NewMtl();
   ~NewMtl() = default;
 };
@@ -40,7 +40,7 @@ struct Data {
   std::vector<UseMtl> usemtl;
 
   std::vector<Index> indices;
-  std::vector<unsigned int> w_indices;
+  std::vector<unsigned int> edges;
 
   std::vector<float> vn;
   std::vector<float> vt;

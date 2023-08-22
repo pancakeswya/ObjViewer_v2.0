@@ -1,14 +1,15 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/3DViewer_icon.png</file>
-	<file>images/texture.png</file>
-	<file>shaders/wireframe.frag</file>
-	<file>shaders/wireframe.vert</file>
-	<file>shaders/solid.frag</file>
-	<file>shaders/solid.vert</file>
-	<file>shaders/texture_no_normals.frag</file>
-	<file>shaders/texture_no_normals.vert</file>
-	<file>shaders/texture.frag</file>
-	<file>shaders/texture.vert</file>
+        <file>images/ObjViewer_icon.png</file>
+        <file>images/left_arrow.png</file>
+        <file>images/right_arrow.png</file>
+        <file>shaders/wireframe.frag</file>
+        <file>shaders/wireframe.vert</file>
+        <file>shaders/solid.frag</file>
+        <file>shaders/solid.vert</file>
+        <file>shaders/texture_no_normals.frag</file>
+        <file>shaders/texture_no_normals.vert</file>
+        <file>shaders/texture.frag</file>
+        <file>shaders/texture.vert</file>
     </qresource>
 </RCC>

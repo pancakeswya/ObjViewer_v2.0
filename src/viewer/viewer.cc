@@ -5,15 +5,16 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 
+#include "../util/gif_maker.h"
 #include "./ui_viewer.h"
+
+namespace obj {
 
 Viewer::Viewer(QWidget* parent)
     : QMainWindow(parent),
-      ui(new Ui::Viewer),
-      settings("School21", "3DViewer_v1.0") {
-  ui->setupUi(this);
-  setWindowTitle("3DViewer_v1.0");
-  setWindowIcon(QIcon(":/images/3DViewer_icon.png"));
+      ui_(new Ui::Viewer),
+      settings_("Winfordt", "ObjViewer") {
+  ui_->setupUi(this);
   SetTheme();
   Init();
   LoadSettings();
@@ -21,101 +22,59 @@ Viewer::Viewer(QWidget* parent)
 
 Viewer::~Viewer() {
   SaveSettings();
-  delete ui;
+  delete ui_;
 }
 
 void Viewer::Init() {
-  connect(ui->pushButton_openObj, SIGNAL(clicked()), this,
-          SLOT(OnPushButtonOpenObjClicked()));
-  connect(ui->switch_line_type, SIGNAL(currentIndexChanged(int)), this,
-          SLOT(OnSwitchLineTypeCurrentIndexChanged(int)));
-  connect(ui->switch_projection, SIGNAL(currentIndexChanged(int)), this,
-          SLOT(OnSwitchProjectionCurrentIndexChanged(int)));
-  connect(ui->LineWidth_SpinBox, SIGNAL(valueChanged(int)), this,
-          SLOT(OnLineWidthSpinBoxValueChanged(int)));
-  connect(ui->switch_type_vertex, SIGNAL(currentIndexChanged(int)), this,
-          SLOT(OnSwitchTypeVertexCurrentIndexChanged(int)));
-  connect(ui->vertexSize_SpinBox, SIGNAL(valueChanged(int)), this,
-          SLOT(OnVertexSizeSpinBoxValueChanged(int)));
-  connect(ui->bg_color, SIGNAL(clicked()), this, SLOT(OnBgColorClicked()));
-  connect(ui->line_color, SIGNAL(clicked()), this, SLOT(OnLineColorClicked()));
-  connect(ui->vertex_color, SIGNAL(clicked()), this,
-          SLOT(OnVertexColorClicked()));
-  connect(ui->zoom_SpinBox, SIGNAL(valueChanged(double)), this,
-          SLOT(OnZoomSpinBoxValueChanged(double)));
-  connect(ui->moveSpinBox_X, SIGNAL(valueChanged(int)), this,
-          SLOT(OnMoveSpinBoxXValueChanged(int)));
-  connect(ui->moveSpinBox_Y, SIGNAL(valueChanged(int)), this,
-          SLOT(OnMoveSpinBoxYValueChanged(int)));
-  connect(ui->moveSpinBox_Z, SIGNAL(valueChanged(int)), this,
-          SLOT(OnMoveSpinBoxZValueChanged(int)));
-  connect(ui->rotate_spinBox_X, SIGNAL(valueChanged(int)), this,
-          SLOT(OnRotateSpinBoxXValueChanged(int)));
-  connect(ui->rotate_spinBox_Y, SIGNAL(valueChanged(int)), this,
-          SLOT(OnRotateSpinBoxYValueChanged(int)));
-  connect(ui->rotate_spinBox_Z, SIGNAL(valueChanged(int)), this,
-          SLOT(OnRotateSpinBoxZValueChanged(int)));
-  connect(ui->screen_button, SIGNAL(clicked()), this,
-          SLOT(OnScreenButtonClicked()));
-  connect(ui->reset, SIGNAL(clicked()), this, SLOT(OnResetClicked()));
-  connect(ui->gif_button, SIGNAL(clicked()), this, SLOT(OnGifButtonClicked()));
-  connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this,
-          SLOT(OnComboBoxCurrentIndexChanged(int)));
-  ui->zoom_SpinBox->setValue(1);
-  connect(ui->rotate_x, &QSlider::valueChanged, ui->rotate_spinBox_X,
+  connect(ui_->pushbutton_open_file, SIGNAL(clicked()), this,
+          SLOT(OnPushButtonOpenFileClicked()));
+  connect(ui_->combo_box_projection, QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget, &Loader::SetProjectionType);
+  connect(ui_->combo_box_view_type, QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget, &Loader::SetViewType);
+  connect(ui_->combo_box_edge_type, QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget, &Loader::SetEdgeType);
+  connect(ui_->spin_box_edge_size, QOverload<int>::of(&QSpinBox::valueChanged), ui_->obj_widget, &Loader::SetEdgeSize);
+  connect(ui_->combo_box_type_vertex, QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget, &Loader::SetVertexType);
+  connect(ui_->spin_box_vertex_size, QOverload<int>::of(&QSpinBox::valueChanged), ui_->obj_widget, &Loader::SetVertexSize);
+  connect(ui_->pushbutton_bg_color, SIGNAL(clicked()), this, SLOT(OnPushButtonBgColorClicked()));
+  connect(ui_->puhsbutton_edge_color, SIGNAL(clicked()), this, SLOT(OnPushButtonEdgeColorClicked()));
+  connect(ui_->pushbutton_vertex_color, SIGNAL(clicked()), this,
+          SLOT(OnPushButtonVertexColorClicked()));
+  connect(ui_->pushbutton_reset, SIGNAL(clicked()), this, SLOT(OnPushButtonResetClicked()));
+  connect(ui_->pushbutton_gif, SIGNAL(clicked()), this, SLOT(OnPushButtonGifClicked()));
+  connect(ui_->d_spin_box_scale, QOverload<double>::of(&QDoubleSpinBox::valueChanged), ui_->obj_widget, &Loader::Scale);
+  connect(ui_->d_spin_box_move_x, SIGNAL(valueChanged(double)), this,
+          SLOT(OnDoubleSpinBoxMoveValueChanged(double)));
+  connect(ui_->d_spin_box_move_y, SIGNAL(valueChanged(double)), this,
+          SLOT(OnDoubleSpinBoxMoveValueChanged(double)));
+  connect(ui_->d_spin_box_move_z, SIGNAL(valueChanged(double)), this,
+          SLOT(OnDoubleSpinBoxMoveValueChanged(double)));
+  connect(ui_->spin_box_rotate_x, SIGNAL(valueChanged(int)), this,
+          SLOT(OnSpinBoxRotateValueChanged(int)));
+  connect(ui_->spin_box_rotate_y, SIGNAL(valueChanged(int)), this,
+          SLOT(OnSpinBoxRotateValueChanged(int)));
+  connect(ui_->spin_box_rotate_z, SIGNAL(valueChanged(int)), this,
+          SLOT(OnSpinBoxRotateValueChanged(int)));
+  connect(ui_->pushbutton_screen, SIGNAL(clicked()), this,
+          SLOT(OnPushButtonScreenClicked()));
+  connect(ui_->slider_rotate_x, &QSlider::valueChanged, ui_->spin_box_rotate_x,
           &QSpinBox::setValue);
-  connect(ui->rotate_spinBox_X, QOverload<int>::of(&QSpinBox::valueChanged),
-          ui->rotate_x, &QSlider::setValue);
-  ui->rotate_x->setRange(-360, 360);
-  ui->moveSpinBox_X->setRange(-1000, 1000);
-  ui->moveSpinBox_X->setValue(0);
-
-  connect(ui->rotate_y, &QSlider::valueChanged, ui->rotate_spinBox_Y,
+  connect(ui_->spin_box_rotate_x, QOverload<int>::of(&QSpinBox::valueChanged),
+          ui_->slider_rotate_x, &QSlider::setValue);
+  connect(ui_->slider_rotate_y, &QSlider::valueChanged, ui_->spin_box_rotate_y,
           &QSpinBox::setValue);
-  connect(ui->rotate_spinBox_Y, QOverload<int>::of(&QSpinBox::valueChanged),
-          ui->rotate_y, &QSlider::setValue);
-  ui->rotate_y->setRange(-360, 360);
-  ui->moveSpinBox_Y->setRange(-1000, 1000);
-  ui->moveSpinBox_Y->setValue(0);
-
-  connect(ui->rotate_z, &QSlider::valueChanged, ui->rotate_spinBox_Z,
+  connect(ui_->spin_box_rotate_y, QOverload<int>::of(&QSpinBox::valueChanged),
+          ui_->slider_rotate_y, &QSlider::setValue);
+  connect(ui_->slider_rotate_z, &QSlider::valueChanged, ui_->spin_box_rotate_z,
           &QSpinBox::setValue);
-  connect(ui->rotate_spinBox_Z, QOverload<int>::of(&QSpinBox::valueChanged),
-          ui->rotate_z, &QSlider::setValue);
-  ui->rotate_z->setRange(-360, 360);
-  ui->moveSpinBox_Z->setRange(-1000, 1000);
-  ui->moveSpinBox_Z->setValue(0);
-
-  connect(ui->LineWidth_Slider, &QSlider::valueChanged, ui->LineWidth_SpinBox,
-          &QSpinBox::setValue);
-  connect(ui->LineWidth_SpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
-          ui->LineWidth_Slider, &QSlider::setValue);
-  ui->LineWidth_Slider->setRange(1, 10);
-  ui->LineWidth_SpinBox->setRange(1, 10);
-
-  connect(ui->vertexSize_Slider, &QSlider::valueChanged, ui->vertexSize_SpinBox,
-          &QSpinBox::setValue);
-  connect(ui->vertexSize_SpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
-          ui->vertexSize_Slider, &QSlider::setValue);
-  ui->vertexSize_Slider->setRange(1, 10);
-  ui->vertexSize_SpinBox->setRange(1, 10);
-
-  ui->rotate_spinBox_X->setRange(-360, 360);
-  ui->rotate_spinBox_X->setValue(0);
-
-  ui->rotate_spinBox_Y->setRange(-360, 360);
-  ui->rotate_spinBox_Y->setValue(0);
-
-  ui->rotate_spinBox_Z->setRange(-360, 360);
-  ui->rotate_spinBox_Z->setValue(0);
+  connect(ui_->spin_box_rotate_z, QOverload<int>::of(&QSpinBox::valueChanged),
+          ui_->slider_rotate_z, &QSlider::setValue);
 }
 
 void Viewer::SetTheme() {
   QApplication::setStyle(QStyleFactory::create("Fusion"));
   QPalette darkPalette;
-  darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
+  darkPalette.setColor(QPalette::Window, QColor(36, 36, 36));
   darkPalette.setColor(QPalette::WindowText, Qt::white);
-  darkPalette.setColor(QPalette::Base, QColor(25, 25, 25));
+  darkPalette.setColor(QPalette::Base, QColor(53, 53, 53));
   darkPalette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
   darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
   darkPalette.setColor(QPalette::ToolTipText, Qt::white);
@@ -130,178 +89,161 @@ void Viewer::SetTheme() {
 }
 
 void Viewer::SaveSettings() {
-  settings.setValue("projection", ui->switch_projection->currentIndex());
-  settings.setValue("line type", ui->switch_line_type->currentIndex());
-  settings.setValue("line color", ui->objWidget->GetColorLine());
-  settings.setValue("line width", ui->LineWidth_SpinBox->value());
-  settings.setValue("point type", ui->switch_type_vertex->currentIndex());
-  settings.setValue("point color", ui->objWidget->GetColorPoint());
-  settings.setValue("point width", ui->vertexSize_SpinBox->value());
-  settings.setValue("background color", ui->objWidget->GetColorBg());
+  settings_.setValue("projection", ui_->combo_box_projection->currentIndex());
+  settings_.setValue("edge type", ui_->combo_box_edge_type->currentIndex());
+  settings_.setValue("edge color", ui_->obj_widget->GetEdgeColor());
+  settings_.setValue("edge size", ui_->spin_box_edge_size->value());
+  settings_.setValue("vertex type", ui_->combo_box_type_vertex->currentIndex());
+  settings_.setValue("vertex color", ui_->obj_widget->GetVertexColor());
+  settings_.setValue("vertex size", ui_->spin_box_vertex_size->value());
+  settings_.setValue("background color", ui_->obj_widget->GetBgColor());
 }
 
 void Viewer::LoadSettings() {
-  QString settingsFilePath = settings.fileName();
+  QString settingsFilePath = settings_.fileName();
   QFile file(settingsFilePath);
   if (file.exists()) {
-    ui->switch_projection->setCurrentIndex(
-        settings.value("projection").toInt());
-    ui->switch_line_type->setCurrentIndex(settings.value("line type").toInt());
-    ui->objWidget->SetColorLine(settings.value("line color").value<QColor>());
-    ui->LineWidth_SpinBox->setValue(settings.value("line width").toInt());
-    ui->switch_type_vertex->setCurrentIndex(
-        settings.value("point type").toInt());
-    ui->objWidget->SetColorPoint(settings.value("point color").value<QColor>());
-    ui->vertexSize_SpinBox->setValue(settings.value("point width").toInt());
-    ui->objWidget->SetColorBg(
-        settings.value("background color").value<QColor>());
+    ui_->combo_box_projection->setCurrentIndex(
+        settings_.value("projection").toInt());
+    ui_->combo_box_edge_type->setCurrentIndex(settings_.value("edge type").toInt());
+    ui_->obj_widget->SetEdgeColor(settings_.value("edge color").value<QColor>());
+    ui_->spin_box_edge_size->setValue(settings_.value("edge size").toInt());
+    ui_->combo_box_type_vertex->setCurrentIndex(
+        settings_.value("point type").toInt());
+    ui_->obj_widget->SetVertexColor(settings_.value("vertex color").value<QColor>());
+    ui_->spin_box_vertex_size->setValue(settings_.value("vertex size").toInt());
+    ui_->obj_widget->SetBgColor(
+        settings_.value("background color").value<QColor>());
   }
 }
 
-void Viewer::OnPushButtonOpenObjClicked() {
+void Viewer::OnPushButtonOpenFileClicked() {
   QString filepath = QFileDialog::getOpenFileName(
       this, tr("Open File"), QDir::homePath(), tr("OBJ files (*.obj)"));
-  if (!filepath.isEmpty()) {
-    QFileInfo fileInfo(filepath);
-    auto stat = ui->objWidget->Open(filepath);
-    if (stat != Obj::Status::noExc) {
-      QMessageBox::critical(this, "Error",
-                            QStringList({"No errors occurred", "Invalid file",
-                                         "No obj file to open"})[short(stat)]);
-    }
-    ui->label_file_name->setText("Название файла: " + fileInfo.fileName());
-    ui->label_vertex_am->setText(
-        "Количество вершин: " +
-        QString::number(ui->objWidget->GetVertexCount()));
-    ui->label_facets_am->setText(
-        "Количество ребер: " + QString::number(ui->objWidget->GetFacetCount()));
+  if (filepath.isEmpty()) {
+      return;
   }
+  QFileInfo fileInfo(filepath);
+  auto stat = ui_->obj_widget->Open(filepath);
+  if (stat != Status::noExc) {
+    QMessageBox::critical(this, "Error",
+                          QStringList({"No errors occurred", "Invalid file",
+                                       "No obj file to open"})[short(stat)]);
+  }
+  ui_->label_file_name_text->setText(fileInfo.fileName());
+  ui_->label_vertex_am_int->setText(QString::number(ui_->obj_widget->GetVertexCount()));
+  ui_->label_facets_amount_int->setText(QString::number(ui_->obj_widget->GetFacetCount()));
+  ui_->label_edge_amount_int->setText(QString::number(ui_->obj_widget->GetEdgeCount()));
 }
 
-void Viewer::OnBgColorClicked() {
+void Viewer::OnPushButtonBgColorClicked() {
   QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
   if (color.isValid()) {
-    ui->objWidget->SetColorBg(color);
+    ui_->obj_widget->SetBgColor(color);
   }
 }
 
-void Viewer::OnSwitchLineTypeCurrentIndexChanged(int index) {
-  ui->objWidget->SetLineType(index);
-}
-
-void Viewer::OnSwitchProjectionCurrentIndexChanged(int index) {
-  ui->objWidget->SetProjectionType(index);
-}
-
-void Viewer::OnLineWidthSpinBoxValueChanged(int arg1) {
-  ui->objWidget->SetLineSize(static_cast<float>(arg1));
-}
-
-void Viewer::OnSwitchTypeVertexCurrentIndexChanged(int index) {
-  ui->objWidget->SetPointType(index);
-}
-
-void Viewer::OnVertexSizeSpinBoxValueChanged(int arg1) {
-  ui->objWidget->SetPointSize(static_cast<float>(arg1));
-}
-
-void Viewer::OnLineColorClicked() {
+void Viewer::OnPushButtonEdgeColorClicked() {
   QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
   if (color.isValid()) {
-    ui->objWidget->SetColorLine(color);
+    ui_->obj_widget->SetEdgeColor(color);
   }
 }
 
-void Viewer::OnVertexColorClicked() {
+void Viewer::OnPushButtonVertexColorClicked() {
   QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
   if (color.isValid()) {
-    ui->objWidget->SetColorPoint(color);
+    ui_->obj_widget->SetVertexColor(color);
   }
 }
 
-void Viewer::OnZoomSpinBoxValueChanged(double value) {
-  ui->objWidget->Zoom(static_cast<float>(value));
+void Viewer::OnDoubleSpinBoxMoveValueChanged(double value) {
+  auto move_spin_box = dynamic_cast<QDoubleSpinBox*>(sender());
+  ui_->obj_widget->Move(value, ui_->vertical_layout_spin_boxes_move->indexOf(move_spin_box));
 }
 
-void Viewer::OnMoveSpinBoxXValueChanged(int value) {
-  ui->objWidget->Move(static_cast<float>(value), 0);
+void Viewer::OnSpinBoxRotateValueChanged(int value) {
+  auto rotate_spin_box = dynamic_cast<QSpinBox*>(sender());
+  ui_->obj_widget->Rotate(value, ui_->vertical_layout_rotate_spin_boxes->indexOf(rotate_spin_box));
 }
 
-void Viewer::OnMoveSpinBoxYValueChanged(int value) {
-  ui->objWidget->Move(static_cast<float>(value), 1);
-}
-
-void Viewer::OnMoveSpinBoxZValueChanged(int value) {
-  ui->objWidget->Move(static_cast<float>(value), 2);
-}
-
-void Viewer::OnRotateSpinBoxXValueChanged(int value) {
-  ui->objWidget->Rotate(static_cast<float>(value), 0);
-}
-
-void Viewer::OnRotateSpinBoxYValueChanged(int value) {
-  ui->objWidget->Rotate(static_cast<float>(value), 1);
-}
-
-void Viewer::OnRotateSpinBoxZValueChanged(int value) {
-  ui->objWidget->Rotate(static_cast<float>(value), 2);
-}
-
-void Viewer::OnScreenButtonClicked() {
-  const QRect rect(0, 0, ui->objWidget->width(), ui->objWidget->height());
-  QPixmap pixmap = ui->objWidget->grab(rect);
-
+void Viewer::OnPushButtonScreenClicked() {
+  const QRect rect(0, 0, ui_->obj_widget->width(), ui_->obj_widget->height());
+  QPixmap pixmap = ui_->obj_widget->grab(rect);
   const QString format = "png";
-  QString savePath =
-      QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
-  if (savePath.isEmpty()) {
-    savePath = QDir::currentPath();
-  }
-  savePath += tr("/screenshot.") + format;
-  QFileDialog fileDialog(this, tr("Save As"), savePath);
-  fileDialog.setAcceptMode(QFileDialog::AcceptSave);
-  fileDialog.setFileMode(QFileDialog::AnyFile);
-  fileDialog.setDirectory(savePath);
 
-  QStringList mimeTypes;
-  const QList<QByteArray> baMimeTypes = QImageWriter::supportedMimeTypes();
-  for (const QByteArray& bf : baMimeTypes) {
-    mimeTypes.append(QLatin1String(bf));
+  QString save_path =
+      QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+  if (save_path.isEmpty()) {
+    save_path = QDir::currentPath();
   }
-  fileDialog.setMimeTypeFilters(mimeTypes);
-  fileDialog.selectMimeTypeFilter("image/" + format);
-  fileDialog.setDefaultSuffix(format);
-  if (fileDialog.exec() != QDialog::Accepted) {
+  save_path += tr("/screenshot.") + format;
+
+  QFileDialog file_dialog(this, tr("Save As"), save_path);
+  file_dialog.setAcceptMode(QFileDialog::AcceptSave);
+  file_dialog.setFileMode(QFileDialog::AnyFile);
+  file_dialog.setDirectory(save_path);
+
+  QStringList mime_types;
+  const QList<QByteArray> ba_mime_types = QImageWriter::supportedMimeTypes();
+  for (const QByteArray& bf : ba_mime_types) {
+    mime_types.append(QLatin1String(bf));
+  }
+  file_dialog.setMimeTypeFilters(mime_types);
+  file_dialog.selectMimeTypeFilter("image/" + format);
+  file_dialog.setDefaultSuffix(format);
+  if (file_dialog.exec() != QDialog::Accepted) {
     return;
   }
-  const QString fileName = fileDialog.selectedFiles().first();
-  if (!pixmap.save(fileName)) {
+
+  const QString file_name = file_dialog.selectedFiles().constFirst();
+  if (!pixmap.save(file_name)) {
     QMessageBox::warning(this, tr("Save Error"),
                          tr("The image could not be saved to \"%1\".")
-                             .arg(QDir::toNativeSeparators(fileName)));
+                             .arg(QDir::toNativeSeparators(file_name)));
   }
 }
 
-void Viewer::OnResetClicked() {
-  ui->switch_projection->setCurrentIndex(0);
-  ui->switch_line_type->setCurrentIndex(0);
-  ui->objWidget->SetColorLine(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
-  ui->LineWidth_SpinBox->setValue(0);
-  ui->switch_type_vertex->setCurrentIndex(0);
-  ui->objWidget->SetColorPoint(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
-  ui->vertexSize_SpinBox->setValue(0);
-  ui->objWidget->SetColorBg(QColor(Qt::black));
+void Viewer::OnPushButtonResetClicked() {
+  ui_->combo_box_projection->setCurrentIndex(0);
+  ui_->combo_box_edge_type->setCurrentIndex(0);
+  ui_->obj_widget->SetEdgeColor(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
+  ui_->spin_box_edge_size->setValue(1);
+  ui_->combo_box_type_vertex->setCurrentIndex(0);
+  ui_->obj_widget->SetVertexColor(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
+  ui_->spin_box_vertex_size->setValue(1);
+  ui_->obj_widget->SetBgColor(QColor(Qt::black));
 }
 
-void Viewer::OnGifButtonClicked() {
-  auto gif = new GifMaker(ui->objWidget->GetFramebuffer());
-  QObject::connect(gif, &GifMaker::MakinGif, ui->objWidget,
-                   &Obj::Loader::UpdateFramebuffer);
-  QObject::connect(gif, &GifMaker::GifDone, gif, &GifMaker::quit);
-  QObject::connect(gif, &GifMaker::GifDone, gif, &GifMaker::deleteLater);
+void Viewer::OnPushButtonGifClicked() {
+  const QString format = "gif";
+  QString save_path =
+      QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
+  if (save_path.isEmpty()) {
+    save_path = QDir::currentPath();
+  }
+  save_path += tr("/gif_image.") + format;
+
+  QFileDialog file_dialog(this, tr("Save As"), save_path);
+  file_dialog.setAcceptMode(QFileDialog::AcceptSave);
+  file_dialog.setFileMode(QFileDialog::AnyFile);
+  file_dialog.setDirectory(save_path);
+  file_dialog.setDefaultSuffix(format);
+
+  if (file_dialog.exec() != QDialog::Accepted) {
+    return;
+  }
+  QString filepath = file_dialog.selectedFiles().constFirst();
+  auto gif = new GifMaker(ui_->obj_widget->GetFramebuffer(), std::move(filepath));
+  connect(gif, &GifMaker::MakinGif, ui_->obj_widget,
+                   &Loader::UpdateFramebuffer);
+  connect(gif, &GifMaker::GifFailed, this, [this]() {
+      QMessageBox::warning(this, "Invalid gif", "Gif making processing is failed");
+  });
+  connect(gif, &GifMaker::finished, gif, &GifMaker::quit);
+  connect(gif, &GifMaker::finished, gif, &GifMaker::deleteLater);
   gif->start();
 }
 
-void Viewer::OnComboBoxCurrentIndexChanged(int index) {
-  ui->objWidget->SetModelViewType(index);
-}
+} // namespace obj
+

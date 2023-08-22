@@ -1,6 +1,6 @@
 include Makefile.mk
 
-NAME         := 3DViewer_v1.0
+NAME         := ObjViewer
 APP          := $(if $(filter Linux,$(OS)),$(NAME),$(NAME).app)
 
 SRC_DIR      := src

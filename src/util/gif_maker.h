@@ -3,20 +3,26 @@
 
 #include <QFileDialog>
 #include <QThread>
+#include <utility>
+
+namespace obj {
 
 class GifMaker : public QThread {
   Q_OBJECT
  public:
-  GifMaker(QImage &frame);
+  GifMaker(QImage &frame, QString path);
 
  private:
   QImage &frame_;
+  QString path_;
   void run() override;
  signals:
+  void GifFailed();
   void MakinGif();
-  void GifDone();
 };
 
-inline GifMaker::GifMaker(QImage &frame) : frame_(frame) {}
+inline GifMaker::GifMaker(QImage &frame, QString path) : frame_(frame), path_(std::move(path)) {}
+
+} // namespace obj
 
 #endif  // GIFMAKER_H
