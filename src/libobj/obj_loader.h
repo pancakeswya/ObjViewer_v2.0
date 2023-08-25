@@ -14,25 +14,27 @@ namespace obj {
 
 enum class ProjType : bool { kParallel, kCentral };
 
-enum class ViewType : short int { kWireframe, kSolid, kMaterial};
+enum class ViewType : short int { kWireframe, kSolid, kMaterial };
 
 enum class EdgeType : bool { kSolid, kDashed };
 
 enum class VertexType : short int { kNone, kQuad, kCircle };
 
 struct Settings {
-    EdgeType edge_type{};
-    VertexType vertex_type{};
-    ProjType proj_type;
-    ViewType model_view_type{};
-    GLfloat vertex_size;
-    GLfloat edge_size;
-    QVector3D color_line;
-    QVector3D color_point;
-    QColor color_bg;
+  EdgeType edge_type{};
+  VertexType vertex_type{};
+  ProjType proj_type;
+  ViewType model_view_type{};
+  GLfloat vertex_size;
+  GLfloat edge_size;
+  QVector3D color_line;
+  QVector3D color_point;
+  QColor color_bg;
 };
 
 using ShaderPaths = std::pair<const char*, const char*>;
+
+using MaterialData = std::pair<const Material*, unsigned int>;
 
 class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   Q_OBJECT
@@ -49,7 +51,10 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   QColor GetVertexColor() noexcept;
   QColor GetEdgeColor() noexcept;
   QColor GetBgColor() noexcept;
-  QImage& GetFramebuffer();
+  MaterialData GetMaterialData() noexcept;
+  void ResetTexture(const QString&, unsigned int, unsigned int);
+  void SaveUvMap(const QString&, std::string_view, unsigned int);
+  const QImage& GetFrame();
   void Rotate(int, int);
   void Move(double, int);
  public slots:
@@ -60,7 +65,7 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   void SetVertexType(int);
   void SetEdgeType(int);
   void SetProjectionType(int);
-  void UpdateFramebuffer();
+  void UpdateFrame();
 
  protected:
   void initializeGL() override;
@@ -91,6 +96,6 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   QImage frame_;
 };
 
-}  // namespace Obj
+}  // namespace obj
 
 #endif  // OBJ_LOADER_H

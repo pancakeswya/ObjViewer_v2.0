@@ -32,35 +32,38 @@ struct NewMtl {
 
 struct UseMtl {
   unsigned int index;
-  unsigned int offset;
+  unsigned int offset_fv;
+  unsigned int offset_uv;
 };
 
 struct Data {
-  std::vector<NewMtl> mtl;
-  std::vector<UseMtl> usemtl;
+  unsigned int facet_count{};
+  unsigned int vertex_count{};
 
-  std::vector<Index> indices;
+  std::string dir_path;
+
+  float max[3];
+  float min[3];
+
   std::vector<unsigned int> edges;
+  std::vector<unsigned int> uv;
 
   std::vector<float> vn;
   std::vector<float> vt;
   std::vector<float> v;
 
-  float max[3];
-  float min[3];
+  std::vector<Index> indices;
+  std::vector<UseMtl> usemtl;
+  std::vector<NewMtl> mtl;
 
-  unsigned int facet_count{};
-  unsigned int vertex_count{};
-
-  std::string dir_path;
   Data();
   ~Data() = default;
-  bool FromFile(const std::string& path);
+  bool FromFile(std::string_view path);
   Status GetStatus() noexcept;
 
  protected:
   void Flush();
-  void ReadFile(const std::string& path);
+  void ReadFile(std::string_view path);
   void ParseBuffer(const char* ptr, const char* end);
   const char* ParseMtl(const char* ptr);
   const char* ParseUsemtl(const char* ptr);
@@ -73,8 +76,7 @@ struct Data {
   Status m_stat{};
 };
 
-inline NewMtl::NewMtl()
-    : Ns(32.0f), d(1.0f), Kd{0.7f, 0.7f, 0.7f} {}
+inline NewMtl::NewMtl() : Ns(32.0f), d(1.0f), Kd{0.7f, 0.7f, 0.7f} {}
 
 inline Data::Data()
     : max{std::numeric_limits<float>::min(), std::numeric_limits<float>::min(),
@@ -84,6 +86,6 @@ inline Data::Data()
 
 inline Status Data::GetStatus() noexcept { return m_stat; }
 
-}  // namespace Obj
+}  // namespace obj
 
 #endif  // OBJ_DATA_H_

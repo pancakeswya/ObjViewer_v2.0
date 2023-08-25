@@ -10,10 +10,10 @@ namespace obj {
 class GifMaker : public QThread {
   Q_OBJECT
  public:
-  GifMaker(QImage &frame, QString path);
+  GifMaker(const QImage &frame, QString path);
 
  private:
-  QImage &frame_;
+  const QImage &frame_;
   QString path_;
   void run() override;
  signals:
@@ -21,8 +21,9 @@ class GifMaker : public QThread {
   void MakinGif();
 };
 
-inline GifMaker::GifMaker(QImage &frame, QString path) : frame_(frame), path_(std::move(path)) {}
+inline GifMaker::GifMaker(const QImage &frame, QString path)
+    : frame_(frame), path_(std::move(path)) {}
 
-} // namespace obj
+}  // namespace obj
 
 #endif  // GIFMAKER_H

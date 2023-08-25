@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <QSettings>
 
+#include "./ui_viewer.h"
+
 namespace obj {
 
 QT_BEGIN_NAMESPACE
@@ -25,7 +27,10 @@ class Viewer : public QMainWindow {
   static void SetTheme();
   void SaveSettings();
   void LoadSettings();
+  void LoadMaterial(MaterialData);
  private slots:
+  void OnDoubleSpinBoxStepScaleValueChanged(double);
+  void OnDoubleSpinBoxStepMoveValueChanged(double);
   void OnPushButtonOpenFileClicked();
   void OnPushButtonBgColorClicked();
   void OnPushButtonEdgeColorClicked();
@@ -35,11 +40,12 @@ class Viewer : public QMainWindow {
   void OnPushButtonScreenClicked();
   void OnPushButtonResetClicked();
   void OnPushButtonGifClicked();
+
  private:
   Ui::Viewer* ui_;
   QSettings settings_;
 };
 
-} // namespace obj
+}  // namespace obj
 
 #endif  // VIEWER_H

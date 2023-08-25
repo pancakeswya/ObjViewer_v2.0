@@ -6,7 +6,6 @@
 #include <QStyleFactory>
 
 #include "../util/gif_maker.h"
-#include "./ui_viewer.h"
 
 namespace obj {
 
@@ -28,19 +27,36 @@ Viewer::~Viewer() {
 void Viewer::Init() {
   connect(ui_->pushbutton_open_file, SIGNAL(clicked()), this,
           SLOT(OnPushButtonOpenFileClicked()));
-  connect(ui_->combo_box_projection, QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget, &Loader::SetProjectionType);
-  connect(ui_->combo_box_view_type, QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget, &Loader::SetViewType);
-  connect(ui_->combo_box_edge_type, QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget, &Loader::SetEdgeType);
-  connect(ui_->spin_box_edge_size, QOverload<int>::of(&QSpinBox::valueChanged), ui_->obj_widget, &Loader::SetEdgeSize);
-  connect(ui_->combo_box_type_vertex, QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget, &Loader::SetVertexType);
-  connect(ui_->spin_box_vertex_size, QOverload<int>::of(&QSpinBox::valueChanged), ui_->obj_widget, &Loader::SetVertexSize);
-  connect(ui_->pushbutton_bg_color, SIGNAL(clicked()), this, SLOT(OnPushButtonBgColorClicked()));
-  connect(ui_->puhsbutton_edge_color, SIGNAL(clicked()), this, SLOT(OnPushButtonEdgeColorClicked()));
+  connect(ui_->combo_box_projection,
+          QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget,
+          &Loader::SetProjectionType);
+  connect(ui_->combo_box_view_type,
+          QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget,
+          &Loader::SetViewType);
+  connect(ui_->combo_box_edge_type,
+          QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget,
+          &Loader::SetEdgeType);
+  connect(ui_->spin_box_edge_size, QOverload<int>::of(&QSpinBox::valueChanged),
+          ui_->obj_widget, &Loader::SetEdgeSize);
+  connect(ui_->combo_box_type_vertex,
+          QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget,
+          &Loader::SetVertexType);
+  connect(ui_->spin_box_vertex_size,
+          QOverload<int>::of(&QSpinBox::valueChanged), ui_->obj_widget,
+          &Loader::SetVertexSize);
+  connect(ui_->pushbutton_bg_color, SIGNAL(clicked()), this,
+          SLOT(OnPushButtonBgColorClicked()));
+  connect(ui_->puhsbutton_edge_color, SIGNAL(clicked()), this,
+          SLOT(OnPushButtonEdgeColorClicked()));
   connect(ui_->pushbutton_vertex_color, SIGNAL(clicked()), this,
           SLOT(OnPushButtonVertexColorClicked()));
-  connect(ui_->pushbutton_reset, SIGNAL(clicked()), this, SLOT(OnPushButtonResetClicked()));
-  connect(ui_->pushbutton_gif, SIGNAL(clicked()), this, SLOT(OnPushButtonGifClicked()));
-  connect(ui_->d_spin_box_scale, QOverload<double>::of(&QDoubleSpinBox::valueChanged), ui_->obj_widget, &Loader::Scale);
+  connect(ui_->pushbutton_reset, SIGNAL(clicked()), this,
+          SLOT(OnPushButtonResetClicked()));
+  connect(ui_->pushbutton_gif, SIGNAL(clicked()), this,
+          SLOT(OnPushButtonGifClicked()));
+  connect(ui_->d_spin_box_scale,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged), ui_->obj_widget,
+          &Loader::Scale);
   connect(ui_->d_spin_box_move_x, SIGNAL(valueChanged(double)), this,
           SLOT(OnDoubleSpinBoxMoveValueChanged(double)));
   connect(ui_->d_spin_box_move_y, SIGNAL(valueChanged(double)), this,
@@ -67,6 +83,14 @@ void Viewer::Init() {
           &QSpinBox::setValue);
   connect(ui_->spin_box_rotate_z, QOverload<int>::of(&QSpinBox::valueChanged),
           ui_->slider_rotate_z, &QSlider::setValue);
+  connect(ui_->d_spin_box_step_scale, SIGNAL(valueChanged(double)), this,
+          SLOT(OnDoubleSpinBoxStepScaleValueChanged(double)));
+  connect(ui_->d_spin_box_step_move_x, SIGNAL(valueChanged(double)), this,
+          SLOT(OnDoubleSpinBoxStepMoveValueChanged(double)));
+  connect(ui_->d_spin_box_step_move_y, SIGNAL(valueChanged(double)), this,
+          SLOT(OnDoubleSpinBoxStepMoveValueChanged(double)));
+  connect(ui_->d_spin_box_step_move_z, SIGNAL(valueChanged(double)), this,
+          SLOT(OnDoubleSpinBoxStepMoveValueChanged(double)));
 }
 
 void Viewer::SetTheme() {
@@ -105,15 +129,112 @@ void Viewer::LoadSettings() {
   if (file.exists()) {
     ui_->combo_box_projection->setCurrentIndex(
         settings_.value("projection").toInt());
-    ui_->combo_box_edge_type->setCurrentIndex(settings_.value("edge type").toInt());
-    ui_->obj_widget->SetEdgeColor(settings_.value("edge color").value<QColor>());
+    ui_->combo_box_edge_type->setCurrentIndex(
+        settings_.value("edge type").toInt());
+    ui_->obj_widget->SetEdgeColor(
+        settings_.value("edge color").value<QColor>());
     ui_->spin_box_edge_size->setValue(settings_.value("edge size").toInt());
     ui_->combo_box_type_vertex->setCurrentIndex(
         settings_.value("point type").toInt());
-    ui_->obj_widget->SetVertexColor(settings_.value("vertex color").value<QColor>());
+    ui_->obj_widget->SetVertexColor(
+        settings_.value("vertex color").value<QColor>());
     ui_->spin_box_vertex_size->setValue(settings_.value("vertex size").toInt());
     ui_->obj_widget->SetBgColor(
         settings_.value("background color").value<QColor>());
+  }
+}
+
+namespace {
+
+void ClearLayout(QLayout* layout) {
+  while (QLayoutItem* item = layout->takeAt(0)) {
+    if (QWidget* widget = item->widget()) {
+      widget->deleteLater();
+    }
+    if (QLayout* childLayout = item->layout()) {
+      ClearLayout(childLayout);
+    }
+    delete item;
+  }
+}
+
+}  // namespace
+
+void Viewer::LoadMaterial(MaterialData mtl_p) {
+  auto& layout = ui_->grid_layout_material;
+  ClearLayout(layout);
+  ui_->scroll_area_maps->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  ui_->scroll_area_maps->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  auto& [mtl, mtl_size] = mtl_p;
+  // set new widgets
+  QStringList mtl_ftr = {
+      "Ambient: ", "Diffuse: ", "Specular: ", "Emmission: ", "Opacity: ",
+      "Shiness: ", "Map_Ka: ",  "Map_Kd: ",   "Map_Ks: "};
+  for (unsigned int i = 0; i < mtl_size; ++i) {
+    std::array mtl_val = {mtl[i].Ka, mtl[i].Kd, mtl[i].Ks,
+                          mtl[i].Ke, &mtl[i].d, &mtl[i].Ns};
+    auto layout_mtl = new QGridLayout();
+    layout->addLayout(layout_mtl, i, 0);
+
+    QString material_name = mtl[i].name.data();
+    material_name = "Material name: " + material_name;
+    if (i != 0) {
+      material_name = "\n" + material_name;
+    }
+    auto label_name = new QLabel(material_name);
+    label_name->setAlignment(Qt::AlignCenter);
+
+    layout_mtl->addWidget(label_name, 0, 0, 1, 2, Qt::AlignCenter);
+    for (unsigned int j = 0; j < 6; ++j) {
+      QString test_k = mtl_ftr[j] + QString::number(mtl_val[j][0]);
+      if (j < 4) {
+        test_k += " " + QString::number(mtl_val[j][1]) + " " +
+                  QString::number(mtl_val[j][2]);
+      }
+      auto label_k = new QLabel(test_k);
+      label_k->setAlignment(Qt::AlignCenter);
+      layout_mtl->addWidget(label_k, j + 1, 0, 1, 2, Qt::AlignCenter);
+    }
+    auto label_maps = new QLabel("Maps/Textures: ");
+    label_maps->setAlignment(Qt::AlignCenter);
+    layout_mtl->addWidget(label_maps, 7, 0, 1, 2, Qt::AlignCenter);
+    std::array map_path = {mtl[i].map_ka.path, mtl[i].map_kd.path,
+                           mtl[i].map_ks.path};
+    for (unsigned int j = 8, k = 0; j < 14; ++j) {
+      QString has_texture = (map_path[k].empty()) ? "No texture" : "Textured";
+
+      auto label_map = new QLabel(mtl_ftr[k++]);
+      auto label_map_val = new QLabel(has_texture);
+      auto button_uv = new QPushButton("Save UV");
+      auto button_load = new QPushButton("Load texture");
+      label_map->setAlignment(Qt::AlignCenter);
+      label_map_val->setAlignment(Qt::AlignCenter);
+
+      layout_mtl->addWidget(label_map, j, 0, Qt::AlignCenter);
+      layout_mtl->addWidget(label_map_val, j, 1, Qt::AlignCenter);
+      layout_mtl->addWidget(button_uv, ++j, 0, Qt::AlignCenter);
+      layout_mtl->addWidget(button_load, j, 1, Qt::AlignCenter);
+
+      connect(button_load, &QPushButton::clicked, this, [this, i, k]() {
+        QString filepath = QFileDialog::getOpenFileName(
+            this, tr("Load texture"), QDir::homePath(),
+            tr("PNG files (*.png)"));
+        if (filepath.isEmpty()) {
+          return;
+        }
+        ui_->obj_widget->ResetTexture(filepath, i, k - 1);
+      });
+      connect(button_uv, &QPushButton::clicked, this,
+              [this, i, texpath = map_path[k - 1]]() {
+                QString filepath = QFileDialog::getSaveFileName(
+                    this, tr("Save UV-map"), QDir::homePath(),
+                    tr("PNG files (*.png)"));
+                if (filepath.isEmpty()) {
+                  return;
+                }
+                ui_->obj_widget->SaveUvMap(filepath, texpath, i);
+              });
+    }
   }
 }
 
@@ -121,19 +242,23 @@ void Viewer::OnPushButtonOpenFileClicked() {
   QString filepath = QFileDialog::getOpenFileName(
       this, tr("Open File"), QDir::homePath(), tr("OBJ files (*.obj)"));
   if (filepath.isEmpty()) {
-      return;
+    return;
   }
   QFileInfo fileInfo(filepath);
   auto stat = ui_->obj_widget->Open(filepath);
   if (stat != Status::noExc) {
     QMessageBox::critical(this, "Error",
                           QStringList({"No errors occurred", "Invalid file",
-                                       "No obj file to open"})[short(stat)]);
+                                       "No obj file to open"})[int(stat)]);
   }
   ui_->label_file_name_text->setText(fileInfo.fileName());
-  ui_->label_vertex_am_int->setText(QString::number(ui_->obj_widget->GetVertexCount()));
-  ui_->label_facets_amount_int->setText(QString::number(ui_->obj_widget->GetFacetCount()));
-  ui_->label_edge_amount_int->setText(QString::number(ui_->obj_widget->GetEdgeCount()));
+  ui_->label_vertex_am_int->setText(
+      QString::number(ui_->obj_widget->GetVertexCount()));
+  ui_->label_facets_amount_int->setText(
+      QString::number(ui_->obj_widget->GetFacetCount()));
+  ui_->label_edge_amount_int->setText(
+      QString::number(ui_->obj_widget->GetEdgeCount()));
+  LoadMaterial(ui_->obj_widget->GetMaterialData());
 }
 
 void Viewer::OnPushButtonBgColorClicked() {
@@ -157,14 +282,29 @@ void Viewer::OnPushButtonVertexColorClicked() {
   }
 }
 
+void Viewer::OnDoubleSpinBoxStepScaleValueChanged(double new_step) {
+  ui_->d_spin_box_scale->setSingleStep(new_step);
+}
+
+void Viewer::OnDoubleSpinBoxStepMoveValueChanged(double new_step) {
+  auto spin_box_step_move = dynamic_cast<QDoubleSpinBox*>(sender());
+  int index_step_move =
+      ui_->vertical_layout_d_spin_boxes_step_move->indexOf(spin_box_step_move);
+  auto spin_box_move = dynamic_cast<QDoubleSpinBox*>(
+      ui_->vertical_layout_spin_boxes_move->itemAt(index_step_move)->widget());
+  spin_box_move->setSingleStep(new_step);
+}
+
 void Viewer::OnDoubleSpinBoxMoveValueChanged(double value) {
   auto move_spin_box = dynamic_cast<QDoubleSpinBox*>(sender());
-  ui_->obj_widget->Move(value, ui_->vertical_layout_spin_boxes_move->indexOf(move_spin_box));
+  ui_->obj_widget->Move(
+      value, ui_->vertical_layout_spin_boxes_move->indexOf(move_spin_box));
 }
 
 void Viewer::OnSpinBoxRotateValueChanged(int value) {
   auto rotate_spin_box = dynamic_cast<QSpinBox*>(sender());
-  ui_->obj_widget->Rotate(value, ui_->vertical_layout_rotate_spin_boxes->indexOf(rotate_spin_box));
+  ui_->obj_widget->Rotate(
+      value, ui_->vertical_layout_rotate_spin_boxes->indexOf(rotate_spin_box));
 }
 
 void Viewer::OnPushButtonScreenClicked() {
@@ -234,16 +374,15 @@ void Viewer::OnPushButtonGifClicked() {
     return;
   }
   QString filepath = file_dialog.selectedFiles().constFirst();
-  auto gif = new GifMaker(ui_->obj_widget->GetFramebuffer(), std::move(filepath));
-  connect(gif, &GifMaker::MakinGif, ui_->obj_widget,
-                   &Loader::UpdateFramebuffer);
+  auto gif = new GifMaker(ui_->obj_widget->GetFrame(), std::move(filepath));
+  connect(gif, &GifMaker::MakinGif, ui_->obj_widget, &Loader::UpdateFrame);
   connect(gif, &GifMaker::GifFailed, this, [this]() {
-      QMessageBox::warning(this, "Invalid gif", "Gif making processing is failed");
+    QMessageBox::warning(this, "Invalid gif",
+                         "Gif making processing is failed");
   });
   connect(gif, &GifMaker::finished, gif, &GifMaker::quit);
   connect(gif, &GifMaker::finished, gif, &GifMaker::deleteLater);
   gif->start();
 }
 
-} // namespace obj
-
+}  // namespace obj

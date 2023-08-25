@@ -4,8 +4,8 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <map>
 #include <iostream>
+#include <map>
 
 #include "earcut.h"
 
@@ -327,14 +327,17 @@ const char* Data::ParseFacet(const char* ptr) {
     // wireframe facets
     if (edges.size() != start_i) {
       edges.push_back(idx.fv);
+      uv.push_back(idx.ft);
     }
     edges.push_back(idx.fv);
+    uv.push_back(idx.ft);
     // push parsed indices
     raw_ind.push_back(idx);
     ptr = SkipSpace(ptr);
     ++npolys;
   }
   edges.push_back(edges[start_i]);
+  uv.push_back(uv[start_i]);
   ProcessPolygon(raw_ind, npolys);
   return ptr;
 }
@@ -444,9 +447,10 @@ const char* Data::ParseUsemtl(const char* ptr) {
   std::string use_mtl_name = GetName(&ptr);
   for (unsigned int i = 0; i < mtl.size(); ++i) {
     if (mtl[i].name == use_mtl_name) {
-      usemtl.push_back({i, 0});
+      usemtl.push_back({i, 0, 0});
       if (!indices.empty()) {
-        usemtl[usemtl.size() - 2].offset = indices.size();
+        usemtl[usemtl.size() - 2].offset_fv = indices.size();
+        usemtl[usemtl.size() - 2].offset_uv = uv.size();
       }
       break;
     }
@@ -490,8 +494,8 @@ void Data::ParseBuffer(const char* ptr, const char* end) {
   }
 }
 
-void Data::ReadFile(const std::string& path) {
-  std::ifstream file(path, std::ifstream::binary);
+void Data::ReadFile(std::string_view path) {
+  std::ifstream file(path.data(), std::ifstream::binary);
   if (!file.is_open()) {
     m_stat = Status::noFile;
     return;
@@ -541,12 +545,13 @@ void Data::ReadFile(const std::string& path) {
   if (usemtl.empty()) {
     usemtl.emplace_back(UseMtl{});
   }
-  usemtl.back().offset = indices.size();
+  usemtl.back().offset_fv = indices.size();
+  usemtl.back().offset_uv = uv.size();
   delete[] buffer;
   file.close();
 }
 
-bool Data::FromFile(const std::string& path) {
+bool Data::FromFile(std::string_view path) {
   ReadFile(path);
   if (m_stat != Status::noExc) {
     Flush();
@@ -560,6 +565,7 @@ inline void Data::Flush() {
   std::vector<UseMtl>().swap(usemtl);
   std::vector<Index>().swap(indices);
   std::vector<unsigned int>().swap(edges);
+  std::vector<unsigned int>().swap(uv);
 
   std::vector<float>().swap(vn);
   std::vector<float>().swap(vt);
