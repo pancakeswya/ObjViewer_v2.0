@@ -1,31 +1,9 @@
 #ifndef OBJVIEWER_V2_SRC_MODEL_MESH_H_
 #define OBJVIEWER_V2_SRC_MODEL_MESH_H_
 
-#include <QOpenGLTexture>
-
 #include "data.h"
 
 namespace obj {
-
-struct Map {
-  std::string path;
-  QOpenGLTexture texture;
-  Map();
-  ~Map() = default;
-};
-
-struct Material {
-  std::string name;
-  float Ns{};
-  float d{};
-  float Ka[3]{};
-  float Kd[3]{};
-  float Ks[3]{};
-  float Ke[3]{};
-  Map map_ka;
-  Map map_kd;
-  Map map_ks;
-};
 
 struct Mesh {
   bool has_textures{};
@@ -48,10 +26,7 @@ struct Mesh {
   std::vector<float> points;
 
   std::vector<UseMtl> usemtl;
-  Material* mtl{};
-
-  Mesh() = default;
-  ~Mesh();
+  std::vector<NewMtl> mtl;
 
   Status Open(std::string_view path);
   void ResetTexture(std::string_view path, unsigned int index_mtl,
@@ -63,9 +38,6 @@ struct Mesh {
   void DataToObj(Data& obj_data);
 };
 
-inline Map::Map() : texture(QOpenGLTexture::Target2D) {}
-
-inline Mesh::~Mesh() { delete[] mtl; }
 
 }  // namespace obj
 

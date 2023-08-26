@@ -164,17 +164,16 @@ void ClearLayout(QLayout* layout) {
 
 }  // namespace
 
-void Viewer::LoadMaterial(MaterialData mtl_p) {
+void Viewer::LoadMaterial(const MaterialData& mtl) {
   auto& layout = ui_->grid_layout_material;
   ClearLayout(layout);
   ui_->scroll_area_maps->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   ui_->scroll_area_maps->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  auto& [mtl, mtl_size] = mtl_p;
   // set new widgets
   QStringList mtl_ftr = {
       "Ambient: ", "Diffuse: ", "Specular: ", "Emmission: ", "Opacity: ",
       "Shiness: ", "Map_Ka: ",  "Map_Kd: ",   "Map_Ks: "};
-  for (unsigned int i = 0; i < mtl_size; ++i) {
+  for (unsigned int i = 0; i < mtl.size(); ++i) {
     std::array mtl_val = {mtl[i].Ka, mtl[i].Kd, mtl[i].Ks,
                           mtl[i].Ke, &mtl[i].d, &mtl[i].Ns};
     auto layout_mtl = new QGridLayout();
@@ -205,8 +204,8 @@ void Viewer::LoadMaterial(MaterialData mtl_p) {
     label_maps->setAlignment(Qt::AlignCenter);
     label_maps->setMargin(label_maps->margin() + 4);
     layout_mtl->addWidget(label_maps, 7, 0, 1, 2);
-    std::array map_path = {mtl[i].map_ka.path, mtl[i].map_kd.path,
-                           mtl[i].map_ks.path};
+    std::array map_path = {mtl[i].map_ka, mtl[i].map_kd,
+                           mtl[i].map_ks};
     for (unsigned int j = 8, k = 0; j < 17; ++j) {
       QString has_texture = (map_path[k].empty()) ? "No texture" : "Textured";
 

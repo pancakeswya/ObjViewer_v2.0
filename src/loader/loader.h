@@ -2,11 +2,12 @@
 #define OBJVIEWER_V2_SRC_LOADER_LOADER_H
 
 #include <QOpenGLBuffer>
-#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_2_1>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
+#include <QOpenGLTexture>
 
 #include "../model/mesh.h"
 
@@ -37,9 +38,21 @@ struct Settings {
 
 using ShaderPaths = std::pair<const char*, const char*>;
 
-using MaterialData = std::pair<const Material*, unsigned int>;
+using MaterialData = std::vector<NewMtl>;
 
-class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
+struct Maps {
+    QOpenGLTexture ambient;
+    QOpenGLTexture diffuse;
+    QOpenGLTexture specular;
+    Maps();
+    ~Maps() = default;
+};
+
+inline Maps::Maps() : ambient(QOpenGLTexture::Target2D),
+                      diffuse(QOpenGLTexture::Target2D),
+                      specular(QOpenGLTexture::Target2D) {}
+
+class Loader : public QOpenGLWidget, protected QOpenGLFunctions_2_1 {
   Q_OBJECT
  public:
   explicit Loader(QWidget* parent = nullptr);
@@ -54,7 +67,8 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   QColor GetVertexColor() noexcept;
   QColor GetEdgeColor() noexcept;
   QColor GetBgColor() noexcept;
-  MaterialData GetMaterialData() noexcept;
+  const MaterialData& GetMaterialData() noexcept;
+  void SetTextures();
   void ResetTexture(unsigned int, unsigned int, const QString& = "");
   void SaveUvMap(unsigned int, std::string_view, const QString&);
   const QImage& GetFrame();
@@ -84,6 +98,7 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   GLint u_vm_;
   GLint u_mat_normal_;
   GLint u_color_;
+  Maps* maps_{};
   Mesh mesh_{};
   QOpenGLBuffer vbo_;
   QOpenGLBuffer ebo_;

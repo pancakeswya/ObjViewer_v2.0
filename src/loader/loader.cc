@@ -39,6 +39,8 @@ void Loader::ProgramDestroy() {
   vbo_.destroy();
   ebo_.destroy();
   program_->deleteLater();
+  delete[] maps_;
+  maps_ = nullptr;
 }
 
 void Loader::Rotate(int angle, int axis) {
@@ -96,6 +98,7 @@ ShaderPaths Loader::GetShadersPaths() {
 }
 
 void Loader::ProgramCreate() {
+  SetTextures();
   program_ = new QOpenGLShaderProgram(this);
 
   auto [v_path, f_path] = GetShadersPaths();
@@ -172,8 +175,8 @@ unsigned int Loader::GetFacetCount() noexcept { return mesh_.facet_count; }
 
 unsigned int Loader::GetEdgeCount() noexcept { return mesh_.edges.size() / 2; }
 
-MaterialData Loader::GetMaterialData() noexcept {
-  return {mesh_.mtl, mesh_.material_count};
+const MaterialData& Loader::GetMaterialData() noexcept {
+  return mesh_.mtl;
 }
 
 QColor Loader::GetEdgeColor() noexcept {
@@ -193,9 +196,48 @@ const QImage& Loader::GetFrame() {
   return frame_;
 }
 
+namespace {
+
+enum MapType { kAmbient, kDiffuse, kSpecular };
+
+void LoadTexture(QOpenGLTexture& texture, std::string_view path) {
+  texture.destroy();
+  QImage tex_image;
+  if (!path.empty()) {
+    tex_image.load(path.data());
+  }
+  if (tex_image.isNull()) {
+    // make it default color texture
+    QImage image(1, 1, QImage::Format_RGB32);
+    image.fill(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
+    tex_image = std::move(image);
+  }
+  texture.setData(tex_image.mirrored());
+  texture.setMinificationFilter(QOpenGLTexture::Nearest);
+  texture.setMagnificationFilter(QOpenGLTexture::Linear);
+  texture.setWrapMode(QOpenGLTexture::Repeat);
+}
+
+} // namespace
+
+void Loader::SetTextures() {
+    maps_ = new Maps[mesh_.mtl.size()]();
+    for (size_t i = 0; i < mesh_.mtl.size(); ++i) {
+        LoadTexture(maps_[i].ambient, mesh_.mtl[i].map_ka);
+        LoadTexture(maps_[i].diffuse, mesh_.mtl[i].map_kd);
+        LoadTexture(maps_[i].specular, mesh_.mtl[i].map_ks);
+    }
+}
+
 void Loader::ResetTexture(unsigned int index_mtl, unsigned int map_type,
                           const QString& path) {
-  mesh_.ResetTexture(path.toStdString(), index_mtl, map_type);
+  if (map_type == MapType::kAmbient) {
+      LoadTexture(maps_[index_mtl].ambient, path.toStdString());
+  } else if (map_type == MapType::kDiffuse) {
+      LoadTexture(maps_[index_mtl].diffuse, path.toStdString());
+  } else if (map_type == MapType::kSpecular) {
+      LoadTexture(maps_[index_mtl].specular, path.toStdString());
+  }
   update();
 }
 
@@ -335,18 +377,18 @@ void Loader::paintGL() {
       program_->setUniformValue("shiness", mesh_.mtl[usemtl.index].Ns);
       program_->setUniformValue("opacity", mesh_.mtl[usemtl.index].d);
       if (sett_.model_view_type == ViewType::kMaterial) {
-        mesh_.mtl[usemtl.index].map_ka.texture.bind(0);
-        mesh_.mtl[usemtl.index].map_kd.texture.bind(1);
-        mesh_.mtl[usemtl.index].map_ks.texture.bind(2);
+        maps_[usemtl.index].ambient.bind(0);
+        maps_[usemtl.index].diffuse.bind(1);
+        maps_[usemtl.index].specular.bind(2);
       }
       glDrawElements(GL_TRIANGLES, usemtl.offset_fv - prev_offset,
                      GL_UNSIGNED_INT, (void*)(prev_offset * sizeof(GLuint)));
 
       prev_offset = usemtl.offset_fv;
       if (sett_.model_view_type == ViewType::kMaterial) {
-        mesh_.mtl[usemtl.index].map_ka.texture.release(0);
-        mesh_.mtl[usemtl.index].map_kd.texture.release(1);
-        mesh_.mtl[usemtl.index].map_ks.texture.release(2);
+        maps_[usemtl.index].ambient.release(0);
+        maps_[usemtl.index].diffuse.release(1);
+        maps_[usemtl.index].specular.release(2);
       }
     }
   } else {

@@ -12,7 +12,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(OpenGL_GL_PREFERENCE GLVND)
 
-find_package(OpenGL REQUIRED)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 
 set(QT_OPENGL_WIDGETS_MODULE "OpenGLWidgets")
@@ -61,7 +60,7 @@ else()
 endif()
 
 target_link_libraries(ObjViewer_v2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
-                                        Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} OpenGL::GL Gif)
+                                        Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} Gif)
 
 target_compile_options(ObjViewer_v2 PRIVATE -Wall -Werror -Wextra -O1)
 

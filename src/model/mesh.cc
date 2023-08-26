@@ -1,6 +1,5 @@
 #include "mesh.h"
 
-#include <QImage>
 #include <cstring>
 #include <future>
 #include <iostream>
@@ -11,8 +10,6 @@
 namespace obj {
 
 namespace {
-
-enum MapType { kAmbient, kDiffuse, kSpecular };
 
 struct compare {
   bool operator()(const Index& lhs, const Index& rhs) const noexcept {
@@ -28,25 +25,6 @@ struct compare {
 using IndexMap = std::map<Index, unsigned int, compare>;
 
 using Edge = std::pair<unsigned int, unsigned int>;
-
-void SetTexture(Map& map, std::string path) {
-  map.texture.destroy();
-  QImage tex_image;
-  if (!path.empty()) {
-    tex_image.load(path.data());
-  }
-  if (tex_image.isNull()) {
-    // make it default color texture
-    QImage image(1, 1, QImage::Format_RGB32);
-    image.fill(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
-    tex_image = std::move(image);
-  }
-  map.texture.setData(tex_image.mirrored());
-  map.texture.setMinificationFilter(QOpenGLTexture::Nearest);
-  map.texture.setMagnificationFilter(QOpenGLTexture::Linear);
-  map.texture.setWrapMode(QOpenGLTexture::Repeat);
-  map.path = std::move(path);
-}
 
 std::vector<unsigned int> GetUniqueEdges(
     const std::vector<unsigned int>& edges) {
@@ -70,17 +48,6 @@ std::vector<unsigned int> GetUniqueEdges(
 }
 
 }  // namespace
-
-void Mesh::ResetTexture(std::string_view path, unsigned int index_mtl,
-                        unsigned int map_type) {
-  if (map_type == MapType::kAmbient) {
-    SetTexture(mtl[index_mtl].map_ka, path.data());
-  } else if (map_type == MapType::kDiffuse) {
-    SetTexture(mtl[index_mtl].map_kd, path.data());
-  } else if (map_type == MapType::kSpecular) {
-    SetTexture(mtl[index_mtl].map_ks, path.data());
-  }
-}
 
 Status Mesh::Open(std::string_view path) {
   Clear();
@@ -116,17 +83,7 @@ void Mesh::DataToObj(Data& data) {
     indices.reserve(data.indices.size());
 
     usemtl = std::move(data.usemtl);
-
-    // prepare material for renderer
-    mtl = new Material[data.mtl.size()];
-
-    for (size_t i = 0; i < data.mtl.size() || i == 0; ++i) {
-      mtl[i].name = std::move(data.mtl[i].name);
-      SetTexture(mtl[i].map_ka, std::move(data.mtl[i].map_ka));
-      SetTexture(mtl[i].map_kd, std::move(data.mtl[i].map_kd));
-      SetTexture(mtl[i].map_ks, std::move(data.mtl[i].map_ks));
-      std::memcpy(&mtl[i].Ns, &data.mtl[i].Ns, 14 * sizeof(float));
-    }
+    mtl = std::move (data.mtl);
     // create vertex for each unique index
     unsigned int next_combined_idx = 0, combined_idx = 0;
     for (auto& idx : data.indices) {
@@ -177,8 +134,7 @@ void Mesh::Clear() {
   std::vector<float>().swap(vertices);
   std::vector<float>().swap(points);
   std::vector<UseMtl>().swap(usemtl);
-  delete[] mtl;
-  mtl = nullptr;
+  std::vector<NewMtl>().swap(mtl);
 }
 
 }  // namespace obj
