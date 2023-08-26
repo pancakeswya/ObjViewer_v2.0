@@ -1,16 +1,17 @@
-#ifndef OBJ_MESH_H_
-#define OBJ_MESH_H_
+#ifndef OBJVIEWER_V2_SRC_MODEL_MESH_H_
+#define OBJVIEWER_V2_SRC_MODEL_MESH_H_
 
 #include <QOpenGLTexture>
 
-#include "obj_data.h"
+#include "data.h"
 
 namespace obj {
 
 struct Map {
   std::string path;
   QOpenGLTexture texture;
-  Map() : texture(QOpenGLTexture::Target2D) {}
+  Map();
+  ~Map() = default;
 };
 
 struct Material {
@@ -54,7 +55,7 @@ struct Mesh {
 
   Status Open(std::string_view path);
   void ResetTexture(std::string_view path, unsigned int index_mtl,
-                    unsigned int index_map);
+                    unsigned int map_type);
   void Clear();
 
  protected:
@@ -62,37 +63,10 @@ struct Mesh {
   void DataToObj(Data& obj_data);
 };
 
+inline Map::Map() : texture(QOpenGLTexture::Target2D) {}
+
 inline Mesh::~Mesh() { delete[] mtl; }
-
-inline Status Mesh::Open(std::string_view path) {
-  Clear();
-  auto data = new Data();
-  auto stat = Status::noExc;
-  if (data->FromFile(path)) {
-    DataToObj(*data);
-  } else {
-    stat = data->GetStatus();
-  }
-  delete data;
-  return stat;
-}
-
-inline void Mesh::Clear() {
-  facet_count = vertex_count = 0;
-  max_vertex[0] = min_vertex[0] = 0.0f;
-  max_vertex[1] = min_vertex[1] = 0.0f;
-  max_vertex[2] = min_vertex[2] = 0.0f;
-  std::vector<unsigned int>().swap(indices);
-  std::vector<unsigned int>().swap(edges);
-  std::vector<unsigned int>().swap(uv);
-  std::vector<float>().swap(tex_coords);
-  std::vector<float>().swap(vertices);
-  std::vector<float>().swap(points);
-  std::vector<UseMtl>().swap(usemtl);
-  delete[] mtl;
-  mtl = nullptr;
-}
 
 }  // namespace obj
 
-#endif  // OBJ_MESH_H_
+#endif  // OBJVIEWER_V2_SRC_MODEL_MESH_H_

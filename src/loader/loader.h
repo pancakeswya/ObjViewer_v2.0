@@ -1,5 +1,5 @@
-#ifndef OBJ_LOADER_H
-#define OBJ_LOADER_H
+#ifndef OBJVIEWER_V2_SRC_LOADER_LOADER_H
+#define OBJVIEWER_V2_SRC_LOADER_LOADER_H
 
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
@@ -8,13 +8,15 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 
-#include "obj_mesh.h"
+#include "../model/mesh.h"
 
 namespace obj {
 
 enum class ProjType : bool { kParallel, kCentral };
 
 enum class ViewType : short int { kWireframe, kSolid, kMaterial };
+
+enum class ShadingType : bool { kSmooth, kFlat };
 
 enum class EdgeType : bool { kSolid, kDashed };
 
@@ -25,6 +27,7 @@ struct Settings {
   VertexType vertex_type{};
   ProjType proj_type;
   ViewType model_view_type{};
+  ShadingType shading_type{};
   GLfloat vertex_size;
   GLfloat edge_size;
   QVector3D color_line;
@@ -52,8 +55,8 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   QColor GetEdgeColor() noexcept;
   QColor GetBgColor() noexcept;
   MaterialData GetMaterialData() noexcept;
-  void ResetTexture(const QString&, unsigned int, unsigned int);
-  void SaveUvMap(const QString&, std::string_view, unsigned int);
+  void ResetTexture(unsigned int, unsigned int, const QString& = "");
+  void SaveUvMap(unsigned int, std::string_view, const QString&);
   const QImage& GetFrame();
   void Rotate(int, int);
   void Move(double, int);
@@ -65,6 +68,7 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   void SetVertexType(int);
   void SetEdgeType(int);
   void SetProjectionType(int);
+  void SetShadingType(int);
   void UpdateFrame();
 
  protected:
@@ -76,20 +80,20 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   void ProgramDestroy();
 
  private:
-  GLint pvmUniform_;
-  GLint vmUniform_;
-  GLint matNormalUniform_;
-  GLint colorUniform_;
+  GLint u_pvm_;
+  GLint u_vm_;
+  GLint u_mat_normal_;
+  GLint u_color_;
   Mesh mesh_{};
   QOpenGLBuffer vbo_;
   QOpenGLBuffer ebo_;
   QOpenGLShaderProgram* program_{};
   QOpenGLVertexArrayObject vao_;
-  QMatrix4x4 pMat_;
-  QMatrix4x4 vMat_;
-  QMatrix4x4 mMatRotate_;
-  QMatrix4x4 mMatMove_;
-  QMatrix4x4 mMatZoom_;
+  QMatrix4x4 p_mat_;
+  QMatrix4x4 v_mat_;
+  QMatrix4x4 m_mat_rotate_;
+  QMatrix4x4 m_mat_move_;
+  QMatrix4x4 m_mat_scale_;
   QVector3D angles_{};
   QVector3D moves_{};
   Settings sett_;
@@ -98,4 +102,4 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
 
 }  // namespace obj
 
-#endif  // OBJ_LOADER_H
+#endif  // OBJVIEWER_V2_SRC_LOADER_LOADER_H

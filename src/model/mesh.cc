@@ -1,4 +1,4 @@
-#include "obj_mesh.h"
+#include "mesh.h"
 
 #include <QImage>
 #include <cstring>
@@ -11,6 +11,8 @@
 namespace obj {
 
 namespace {
+
+enum MapType { kAmbient, kDiffuse, kSpecular };
 
 struct compare {
   bool operator()(const Index& lhs, const Index& rhs) const noexcept {
@@ -70,14 +72,27 @@ std::vector<unsigned int> GetUniqueEdges(
 }  // namespace
 
 void Mesh::ResetTexture(std::string_view path, unsigned int index_mtl,
-                        unsigned int index_map) {
-  if (index_map == 0) {
+                        unsigned int map_type) {
+  if (map_type == MapType::kAmbient) {
     SetTexture(mtl[index_mtl].map_ka, path.data());
-  } else if (index_map == 1) {
+  } else if (map_type == MapType::kDiffuse) {
     SetTexture(mtl[index_mtl].map_kd, path.data());
-  } else if (index_map == 2) {
+  } else if (map_type == MapType::kSpecular) {
     SetTexture(mtl[index_mtl].map_ks, path.data());
   }
+}
+
+Status Mesh::Open(std::string_view path) {
+  Clear();
+  auto data = new Data();
+  auto stat = Status::noExc;
+  if (data->FromFile(path)) {
+    DataToObj(*data);
+  } else {
+    stat = data->GetStatus();
+  }
+  delete data;
+  return stat;
 }
 
 void Mesh::DataToObj(Data& data) {
@@ -148,6 +163,22 @@ void Mesh::DataToObj(Data& data) {
   tex_coords = std::move(data.vt);
   uv = std::move(data.uv);
   points = std::move(data.v);
+}
+
+void Mesh::Clear() {
+  facet_count = vertex_count = 0;
+  max_vertex[0] = min_vertex[0] = 0.0f;
+  max_vertex[1] = min_vertex[1] = 0.0f;
+  max_vertex[2] = min_vertex[2] = 0.0f;
+  std::vector<unsigned int>().swap(indices);
+  std::vector<unsigned int>().swap(edges);
+  std::vector<unsigned int>().swap(uv);
+  std::vector<float>().swap(tex_coords);
+  std::vector<float>().swap(vertices);
+  std::vector<float>().swap(points);
+  std::vector<UseMtl>().swap(usemtl);
+  delete[] mtl;
+  mtl = nullptr;
 }
 
 }  // namespace obj

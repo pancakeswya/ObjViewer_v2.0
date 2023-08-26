@@ -1,5 +1,5 @@
-#ifndef OBJ_DATA_H_
-#define OBJ_DATA_H_
+#ifndef OBJVIEWER_V2_SRC_MODEL_DATA_H_
+#define OBJVIEWER_V2_SRC_MODEL_DATA_H_
 
 #include <limits>
 #include <string>
@@ -88,4 +88,4 @@ inline Status Data::GetStatus() noexcept { return m_stat; }
 
 }  // namespace obj
 
-#endif  // OBJ_DATA_H_
+#endif  // OBJVIEWER_V2_SRC_MODEL_DATA_H_

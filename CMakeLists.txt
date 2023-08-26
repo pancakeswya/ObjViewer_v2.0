@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(ObjViewer VERSION 0.1 LANGUAGES C CXX)
+project(ObjViewer_v2 VERSION 0.1 LANGUAGES C CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -29,16 +29,16 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets ${QT_OPENGL_WIDGETS_MODULE
 include_directories("includes/external/")
 add_library(Gif STATIC src/external/gif.c)
 
-set (QRC_FILES resources.qrc)
+set (QRC_FILES resources/resources.qrc)
 
 set(PROJECT_SOURCES
         src/main.cc
-        src/libobj/obj_data.cc
-        src/libobj/obj_data.h
-        src/libobj/obj_mesh.h
-        src/libobj/obj_mesh.cc
-        src/libobj/obj_loader.cc
-        src/libobj/obj_loader.h
+        src/model/data.cc
+        src/model/data.h
+        src/model/mesh.h
+        src/model/mesh.cc
+        src/loader/loader.cc
+        src/loader/loader.h
         src/util/gif_maker.h
         src/util/gif_maker.cc
         src/viewer/viewer.cc
@@ -51,21 +51,21 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 endif()
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(ObjViewer
+    qt_add_executable(ObjViewer_v2
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES} ${QRC_FILES}
     )
 else()
-    add_executable(ObjViewer
+    add_executable(ObjViewer_v2
             ${PROJECT_SOURCES} ${QRC_FILES})
 endif()
 
-target_link_libraries(ObjViewer PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+target_link_libraries(ObjViewer_v2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
                                         Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} OpenGL::GL Gif)
 
-target_compile_options(ObjViewer PRIVATE -Wall -Werror -Wextra -O1)
+target_compile_options(ObjViewer_v2 PRIVATE -Wall -Werror -Wextra -O1)
 
-set_target_properties(ObjViewer PROPERTIES
+set_target_properties(ObjViewer_v2 PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -74,5 +74,5 @@ set_target_properties(ObjViewer PROPERTIES
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(ObjViewer)
+    qt_finalize_executable(ObjViewer_v2)
 endif()

@@ -1,4 +1,4 @@
-#include "obj_loader.h"
+#include "loader.h"
 
 #include <QDir>
 #include <QFileDialog>
@@ -42,42 +42,57 @@ void Loader::ProgramDestroy() {
 }
 
 void Loader::Rotate(int angle, int axis) {
-  mMatRotate_.setToIdentity();
+  m_mat_rotate_.setToIdentity();
   angles_[axis] = angle;
-  mMatRotate_.rotate(angles_.x(), 1.0f, 0.0f, 0.0f);
-  mMatRotate_.rotate(angles_.y(), 0.0f, 1.0f, 0.0f);
-  mMatRotate_.rotate(angles_.z(), 0.0f, 0.0f, 1.0f);
+  m_mat_rotate_.rotate(angles_.x(), 1.0f, 0.0f, 0.0f);
+  m_mat_rotate_.rotate(angles_.y(), 0.0f, 1.0f, 0.0f);
+  m_mat_rotate_.rotate(angles_.z(), 0.0f, 0.0f, 1.0f);
   update();
 }
 
 void Loader::Scale(double coef) {
-  mMatZoom_.setToIdentity();
-  mMatZoom_.scale(coef);
+  m_mat_scale_.setToIdentity();
+  m_mat_scale_.scale(coef);
   update();
 }
 
 void Loader::Move(double dist, int axis) {
   moves_[axis] = dist;
-  mMatMove_.setToIdentity();
-  mMatMove_.translate(moves_.x(), 0.0f, 0.0f);
-  mMatMove_.translate(0.0f, moves_.y(), 0.0f);
-  mMatMove_.translate(0.0f, 0.0f, moves_.z());
+  m_mat_move_.setToIdentity();
+  m_mat_move_.translate(moves_.x(), 0.0f, 0.0f);
+  m_mat_move_.translate(0.0f, moves_.y(), 0.0f);
+  m_mat_move_.translate(0.0f, 0.0f, moves_.z());
   update();
 }
 
 ShaderPaths Loader::GetShadersPaths() {
+  const char* v_path;
+  const char* f_path;
   if (sett_.model_view_type == ViewType::kMaterial && mesh_.has_textures) {
     if (mesh_.has_normals) {
-      return std::make_pair(":/shaders/texture.vert", ":/shaders/texture.frag");
+      v_path = ":/shaders/texture.vert";
+      if (sett_.shading_type == ShadingType::kSmooth) {
+        f_path = ":/shaders/texture.frag";
+      } else {
+        f_path = ":/shaders/texture_flat.frag";
+      }
     } else {
-      return std::make_pair(":/shaders/texture_no_normals.vert",
-                            ":/shaders/texture_no_normals.frag");
+      v_path = ":/shaders/texture_no_normals.vert";
+      f_path = ":/shaders/texture_no_normals.frag";
     }
   } else if (sett_.model_view_type != ViewType::kWireframe &&
              mesh_.has_normals) {
-    return std::make_pair(":/shaders/solid.vert", ":/shaders/solid.frag");
+    v_path = ":/shaders/solid.vert";
+    if (sett_.shading_type == ShadingType::kSmooth) {
+      f_path = ":/shaders/solid.frag";
+    } else {
+      f_path = ":/shaders/solid_flat.frag";
+    }
+  } else {
+    v_path = ":/shaders/wireframe.vert";
+    f_path = ":/shaders/wireframe.frag";
   }
-  return std::make_pair(":/shaders/wireframe.vert", ":/shaders/wireframe.frag");
+  return {v_path, f_path};
 }
 
 void Loader::ProgramCreate() {
@@ -92,10 +107,10 @@ void Loader::ProgramCreate() {
     close();
   }
   program_->bind();
-  pvmUniform_ = program_->uniformLocation("pvm");
-  vmUniform_ = program_->uniformLocation("vm");
-  matNormalUniform_ = program_->uniformLocation("matNormal");
-  colorUniform_ = program_->uniformLocation("color");
+  u_pvm_ = program_->uniformLocation("pvm");
+  u_vm_ = program_->uniformLocation("vm");
+  u_mat_normal_ = program_->uniformLocation("normal_mat");
+  u_color_ = program_->uniformLocation("color");
   program_->setUniformValue("texture_a", 0);
   program_->setUniformValue("texture_d", 1);
   program_->setUniformValue("texture_s", 2);
@@ -111,26 +126,26 @@ void Loader::ProgramCreate() {
   ebo_.bind();
   ebo_.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
-  program_->enableAttributeArray("position");
+  program_->enableAttributeArray("a_position");
   if (sett_.model_view_type != ViewType::kWireframe &&
       (mesh_.has_normals || mesh_.has_textures)) {
     vbo_.allocate(mesh_.vertices.data(), mesh_.vertices.size() * sizeof(float));
     ebo_.allocate(mesh_.indices.data(),
                   mesh_.indices.size() * sizeof(unsigned int));
 
-    program_->setAttributeBuffer("position", GL_FLOAT, 0, 3, mesh_.stride);
+    program_->setAttributeBuffer("a_position", GL_FLOAT, 0, 3, mesh_.stride);
     if (mesh_.has_textures) {
-      program_->enableAttributeArray("texCoords");
-      program_->setAttributeBuffer("texCoords", GL_FLOAT, 3 * sizeof(float), 2,
-                                   mesh_.stride);
+      program_->enableAttributeArray("a_tex_coords");
+      program_->setAttributeBuffer("a_tex_coords", GL_FLOAT, 3 * sizeof(float),
+                                   2, mesh_.stride);
     }
     if (mesh_.has_normals) {
-      program_->enableAttributeArray("normal");
-      program_->setAttributeBuffer("normal", GL_FLOAT, 5 * sizeof(float), 3,
+      program_->enableAttributeArray("a_normal");
+      program_->setAttributeBuffer("a_normal", GL_FLOAT, 5 * sizeof(float), 3,
                                    mesh_.stride);
     }
   } else {
-    program_->setAttributeBuffer("position", GL_FLOAT, 0, 3);
+    program_->setAttributeBuffer("a_position", GL_FLOAT, 0, 3);
     vbo_.allocate(mesh_.points.data(), mesh_.points.size() * sizeof(float));
     ebo_.allocate(mesh_.edges.data(),
                   mesh_.edges.size() * sizeof(unsigned int));
@@ -178,14 +193,17 @@ const QImage& Loader::GetFrame() {
   return frame_;
 }
 
-void Loader::ResetTexture(const QString& path, unsigned int index_mtl,
-                          unsigned int index_map) {
-  mesh_.ResetTexture(path.toStdString(), index_mtl, index_map);
+void Loader::ResetTexture(unsigned int index_mtl, unsigned int map_type,
+                          const QString& path) {
+  mesh_.ResetTexture(path.toStdString(), index_mtl, map_type);
   update();
 }
 
-void Loader::SaveUvMap(const QString& path_save, std::string_view path_texture,
-                       unsigned int index_mtl) {
+void Loader::SaveUvMap(unsigned int index_mtl, std::string_view path_texture,
+                       const QString& path_save) {
+  if (path_texture.empty()) {
+    return;
+  }
   unsigned int prev_off = 0;
   for (auto& umtl : mesh_.usemtl) {
     if (umtl.index == index_mtl) {
@@ -239,6 +257,14 @@ void Loader::SetProjectionType(int proj_type) {
   update();
 }
 
+void Loader::SetShadingType(int shading_type) {
+  sett_.shading_type = ShadingType(shading_type);
+  ProgramDestroy();
+  ProgramCreate();
+  resizeGL(width(), height());
+  update();
+}
+
 void Loader::SetEdgeType(int type) {
   sett_.edge_type = EdgeType(type);
   update();
@@ -257,8 +283,8 @@ void Loader::initializeGL() {
 }
 
 void Loader::resizeGL(int width, int height) {
-  pMat_.setToIdentity();
-  vMat_.setToIdentity();
+  p_mat_.setToIdentity();
+  v_mat_.setToIdentity();
   GLfloat size_x = std::abs(mesh_.min_vertex[0] - mesh_.max_vertex[0]);
   GLfloat size_y = std::abs(mesh_.min_vertex[1] - mesh_.max_vertex[1]);
   GLfloat size_z = std::abs(mesh_.min_vertex[2] - mesh_.max_vertex[2]);
@@ -269,16 +295,15 @@ void Loader::resizeGL(int width, int height) {
   GLfloat aspectratio = GLfloat(width) / GLfloat(height);
   QVector3D center(mid_size_x, mid_size_y, mid_size_z);
   if (sett_.proj_type == ProjType::kCentral) {
-    vMat_.lookAt(QVector3D(center.x(), center.y(), center.z() + max_size),
-                 center, QVector3D(0.0f, 1.0f, 0.0f));
-    pMat_.perspective(100.0, aspectratio, 0.01f * max_size, 100.0f * max_size);
+    v_mat_.lookAt(QVector3D(center.x(), center.y(), center.z() + max_size),
+                  center, QVector3D(0.0f, 1.0f, 0.0f));
+    p_mat_.perspective(100.0, aspectratio, 0.01f * max_size, 100.0f * max_size);
   } else {
-    pMat_.ortho(-max_size * aspectratio, max_size * aspectratio, -max_size,
-                max_size, -100.0f * max_size, 100.0f * max_size);
+    p_mat_.ortho(-max_size * aspectratio, max_size * aspectratio, -max_size,
+                 max_size, -100.0f * max_size, 100.0f * max_size);
   }
-  program_->setUniformValue(
-      "lightPos", QVector3D(center.x(), center.y(), center.z() + max_size * 3));
-  program_->setUniformValue("viewPos", center);
+  program_->setUniformValue("light_pos", QVector3D(center.x(), center.y(),
+                                                   center.z() + max_size * 3));
   program_->release();
 }
 
@@ -291,23 +316,23 @@ void Loader::paintGL() {
 
   program_->bind();
   vao_.bind();
-  QMatrix4x4 vm = vMat_ * mMatMove_ * mMatRotate_ * mMatZoom_;
-  glUniformMatrix4fv(pvmUniform_, 1, GL_FALSE, (pMat_ * vm).constData());
-  glUniformMatrix4fv(vmUniform_, 1, GL_FALSE, vm.constData());
-  glUniformMatrix4fv(matNormalUniform_, 1, GL_FALSE,
+  QMatrix4x4 vm = v_mat_ * m_mat_move_ * m_mat_rotate_ * m_mat_scale_;
+  glUniformMatrix4fv(u_pvm_, 1, GL_FALSE, (p_mat_ * vm).constData());
+  glUniformMatrix4fv(u_vm_, 1, GL_FALSE, vm.constData());
+  glUniformMatrix4fv(u_mat_normal_, 1, GL_FALSE,
                      vm.inverted().transposed().constData());
 
-  program_->setUniformValue(colorUniform_, sett_.color_line);
+  program_->setUniformValue(u_color_, sett_.color_line);
 
   if (sett_.model_view_type != ViewType::kWireframe &&
       (mesh_.has_normals || mesh_.has_textures)) {
     size_t prev_offset = 0;
     for (auto& usemtl : mesh_.usemtl) {
-      program_->setUniformValue("Ks", &mesh_.mtl[usemtl.index].Ka);
-      program_->setUniformValue("Kd", mesh_.mtl[usemtl.index].Kd[0]);
-      program_->setUniformValue("Ks", &mesh_.mtl[usemtl.index].Ks);
-      program_->setUniformValue("Ke", &mesh_.mtl[usemtl.index].Ke);
-      program_->setUniformValue("specPower", mesh_.mtl[usemtl.index].Ns);
+      program_->setUniformValue("ambient", &mesh_.mtl[usemtl.index].Ka);
+      program_->setUniformValue("diffuse", mesh_.mtl[usemtl.index].Kd[0]);
+      program_->setUniformValue("specular", &mesh_.mtl[usemtl.index].Ks);
+      program_->setUniformValue("emission", &mesh_.mtl[usemtl.index].Ke);
+      program_->setUniformValue("shiness", mesh_.mtl[usemtl.index].Ns);
       program_->setUniformValue("opacity", mesh_.mtl[usemtl.index].d);
       if (sett_.model_view_type == ViewType::kMaterial) {
         mesh_.mtl[usemtl.index].map_ka.texture.bind(0);
@@ -334,7 +359,7 @@ void Loader::paintGL() {
       glDisable(GL_LINE_STIPPLE);
     }
     if (sett_.vertex_type != VertexType::kNone) {
-      program_->setUniformValue(colorUniform_, sett_.color_point);
+      program_->setUniformValue(u_color_, sett_.color_point);
       if (sett_.vertex_type == VertexType::kCircle) {
         glEnable(GL_POINT_SMOOTH);
       }

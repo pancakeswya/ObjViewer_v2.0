@@ -31,6 +31,37 @@
 #ifndef GIF_H
 #define GIF_H
 
+// Define these macros to hook into a custom memory allocator.
+// TEMP_MALLOC and TEMP_FREE will only be called in stack fashion - frees in the
+// reverse order of mallocs and any temp memory allocated by a function will be
+// freed before it exits. MALLOC and FREE are used only by GifBegin and GifEnd
+// respectively (to allocate a buffer the size of the image, which is used to
+// find changed pixels for delta-encoding.)
+
+#ifndef GIF_TEMP_MALLOC
+#include <stdlib.h>
+#define GIF_TEMP_MALLOC malloc
+#endif
+
+#ifndef GIF_TEMP_FREE
+#include <stdlib.h>
+#define GIF_TEMP_FREE free
+#endif
+
+#ifndef GIF_MALLOC
+#include <stdlib.h>
+#define GIF_MALLOC malloc
+#endif
+
+#ifndef GIF_FREE
+#include <stdlib.h>
+#define GIF_FREE free
+#endif
+
+#ifndef GIF_FLIP_VERT
+#define GIF_FLIP_VERT
+#endif
+
 #include <stdbool.h>  // for bool macros
 #include <stdint.h>   // for integer typedefs
 #include <stdio.h>    // for FILE*

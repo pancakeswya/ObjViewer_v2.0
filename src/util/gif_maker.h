@@ -1,5 +1,5 @@
-#ifndef GIFMAKER_H
-#define GIFMAKER_H
+#ifndef OBJVIEWER_V2_SRC_UTIL_GIFMAKER_H
+#define OBJVIEWER_V2_SRC_UTIL_GIFMAKER_H
 
 #include <QFileDialog>
 #include <QThread>
@@ -26,4 +26,4 @@ inline GifMaker::GifMaker(const QImage &frame, QString path)
 
 }  // namespace obj
 
-#endif  // GIFMAKER_H
+#endif  // OBJVIEWER_V2_SRC_UTIL_GIFMAKER_H

@@ -25,6 +25,7 @@ Viewer::~Viewer() {
 }
 
 void Viewer::Init() {
+  ui_->scroll_area_maps->hide();
   connect(ui_->pushbutton_open_file, SIGNAL(clicked()), this,
           SLOT(OnPushButtonOpenFileClicked()));
   connect(ui_->combo_box_projection,
@@ -91,6 +92,9 @@ void Viewer::Init() {
           SLOT(OnDoubleSpinBoxStepMoveValueChanged(double)));
   connect(ui_->d_spin_box_step_move_z, SIGNAL(valueChanged(double)), this,
           SLOT(OnDoubleSpinBoxStepMoveValueChanged(double)));
+  connect(ui_->combo_box_shading,
+          QOverload<int>::of(&QComboBox::currentIndexChanged), ui_->obj_widget,
+          &Loader::SetShadingType);
 }
 
 void Viewer::SetTheme() {
@@ -177,14 +181,16 @@ void Viewer::LoadMaterial(MaterialData mtl_p) {
     layout->addLayout(layout_mtl, i, 0);
 
     QString material_name = mtl[i].name.data();
-    material_name = "Material name: " + material_name;
-    if (i != 0) {
-      material_name = "\n" + material_name;
-    }
+    material_name = "Material name:\n" + material_name;
     auto label_name = new QLabel(material_name);
     label_name->setAlignment(Qt::AlignCenter);
-
-    layout_mtl->addWidget(label_name, 0, 0, 1, 2, Qt::AlignCenter);
+    {
+      QFont font("Segoe UI", 10);
+      font.setBold(true);
+      label_name->setFont(font);
+    }
+    label_name->setMargin(label_name->margin() + 2);
+    layout_mtl->addWidget(label_name, 0, 0, 1, 2);
     for (unsigned int j = 0; j < 6; ++j) {
       QString test_k = mtl_ftr[j] + QString::number(mtl_val[j][0]);
       if (j < 4) {
@@ -193,28 +199,30 @@ void Viewer::LoadMaterial(MaterialData mtl_p) {
       }
       auto label_k = new QLabel(test_k);
       label_k->setAlignment(Qt::AlignCenter);
-      layout_mtl->addWidget(label_k, j + 1, 0, 1, 2, Qt::AlignCenter);
+      layout_mtl->addWidget(label_k, j + 1, 0, 1, 2);
     }
     auto label_maps = new QLabel("Maps/Textures: ");
     label_maps->setAlignment(Qt::AlignCenter);
-    layout_mtl->addWidget(label_maps, 7, 0, 1, 2, Qt::AlignCenter);
+    label_maps->setMargin(label_maps->margin() + 4);
+    layout_mtl->addWidget(label_maps, 7, 0, 1, 2);
     std::array map_path = {mtl[i].map_ka.path, mtl[i].map_kd.path,
                            mtl[i].map_ks.path};
-    for (unsigned int j = 8, k = 0; j < 14; ++j) {
+    for (unsigned int j = 8, k = 0; j < 17; ++j) {
       QString has_texture = (map_path[k].empty()) ? "No texture" : "Textured";
 
       auto label_map = new QLabel(mtl_ftr[k++]);
       auto label_map_val = new QLabel(has_texture);
       auto button_uv = new QPushButton("Save UV");
       auto button_load = new QPushButton("Load texture");
+      auto button_unload = new QPushButton("Unload texture");
       label_map->setAlignment(Qt::AlignCenter);
       label_map_val->setAlignment(Qt::AlignCenter);
 
       layout_mtl->addWidget(label_map, j, 0, Qt::AlignCenter);
       layout_mtl->addWidget(label_map_val, j, 1, Qt::AlignCenter);
-      layout_mtl->addWidget(button_uv, ++j, 0, Qt::AlignCenter);
-      layout_mtl->addWidget(button_load, j, 1, Qt::AlignCenter);
-
+      layout_mtl->addWidget(button_uv, ++j, 0);
+      layout_mtl->addWidget(button_load, j, 1);
+      layout_mtl->addWidget(button_unload, ++j, 0, 1, 2);
       connect(button_load, &QPushButton::clicked, this, [this, i, k]() {
         QString filepath = QFileDialog::getOpenFileName(
             this, tr("Load texture"), QDir::homePath(),
@@ -222,8 +230,10 @@ void Viewer::LoadMaterial(MaterialData mtl_p) {
         if (filepath.isEmpty()) {
           return;
         }
-        ui_->obj_widget->ResetTexture(filepath, i, k - 1);
+        ui_->obj_widget->ResetTexture(i, k - 1, filepath);
       });
+      connect(button_unload, &QPushButton::clicked, this,
+              [this, i, k]() { ui_->obj_widget->ResetTexture(i, k - 1); });
       connect(button_uv, &QPushButton::clicked, this,
               [this, i, texpath = map_path[k - 1]]() {
                 QString filepath = QFileDialog::getSaveFileName(
@@ -232,7 +242,7 @@ void Viewer::LoadMaterial(MaterialData mtl_p) {
                 if (filepath.isEmpty()) {
                   return;
                 }
-                ui_->obj_widget->SaveUvMap(filepath, texpath, i);
+                ui_->obj_widget->SaveUvMap(i, texpath, filepath);
               });
     }
   }
@@ -258,6 +268,7 @@ void Viewer::OnPushButtonOpenFileClicked() {
       QString::number(ui_->obj_widget->GetFacetCount()));
   ui_->label_edge_amount_int->setText(
       QString::number(ui_->obj_widget->GetEdgeCount()));
+  ui_->scroll_area_maps->show();
   LoadMaterial(ui_->obj_widget->GetMaterialData());
 }
 

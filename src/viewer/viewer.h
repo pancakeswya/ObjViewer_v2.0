@@ -1,5 +1,5 @@
-#ifndef VIEWER_H
-#define VIEWER_H
+#ifndef OBJVIEWER_V2_SRC_VIEWER_VIEWER_H
+#define OBJVIEWER_V2_SRC_VIEWER_VIEWER_H
 
 #include <QColorDialog>
 #include <QMainWindow>
@@ -48,4 +48,4 @@ class Viewer : public QMainWindow {
 
 }  // namespace obj
 
-#endif  // VIEWER_H
+#endif  // OBJVIEWER_V2_SRC_VIEWER_VIEWER_H

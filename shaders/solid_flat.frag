@@ -13,9 +13,13 @@ uniform vec3 light_pos;
 uniform vec3 color;
 
 void main() {
-    vec3 n = gl_FrontFacing ? normal : -normal;
+    vec3 x_tangent = dFdx(view_pos);
+    vec3 y_tangent = dFdy(view_pos);
+
+    vec3 n = normalize(cross(x_tangent, y_tangent));
     vec3 l = normalize(light_pos - view_pos);
     vec3 e = normalize(-view_pos);
+
     vec3 r = normalize(-reflect(l, n));
 
     vec3 diff = (diffuse + color) * max(dot(n, l), 0.0f);
