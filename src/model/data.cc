@@ -4,14 +4,17 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <map>
 
 #include "earcut.h"
 
-namespace obj {
+namespace obj::DataParser {
 
 namespace {
+
+static constexpr size_t kBufferSize = 65536;
+
+Status stat;
 
 inline bool IsSpace(char c) noexcept {
   return (c == ' ') || (c == '\t') || (c == '\r');
@@ -100,10 +103,8 @@ inline Point3D WorldToLocal(const Point3D& a, const Point3D& u,
   return {Dot(a, u), Dot(a, v), Dot(a, w)};
 }
 
-}  // namespace
-
-void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
-                          unsigned int npolys) {
+void ProcessPolygon(Data& data, const std::vector<Index>& raw_ind,
+                    unsigned int npolys) {
   // quad to 2 triangles
   if (npolys == 4) {
     auto vi0 = size_t(raw_ind[0].fv);
@@ -111,23 +112,23 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
     auto vi2 = size_t(raw_ind[2].fv);
     auto vi3 = size_t(raw_ind[3].fv);
 
-    if (((3 * vi0 + 2) >= v.size()) || ((3 * vi1 + 2) >= v.size()) ||
-        ((3 * vi2 + 2) >= v.size()) || ((3 * vi3 + 2) >= v.size())) {
-      m_stat = Status::invalidFile;
+    if (((3 * vi0 + 2) >= data.v.size()) || ((3 * vi1 + 2) >= data.v.size()) ||
+        ((3 * vi2 + 2) >= data.v.size()) || ((3 * vi3 + 2) >= data.v.size())) {
+      stat = Status::kInvalidFile;
       return;
     }
-    float v0x = v[vi0 * 3 + 0];
-    float v0y = v[vi0 * 3 + 1];
-    float v0z = v[vi0 * 3 + 2];
-    float v1x = v[vi1 * 3 + 0];
-    float v1y = v[vi1 * 3 + 1];
-    float v1z = v[vi1 * 3 + 2];
-    float v2x = v[vi2 * 3 + 0];
-    float v2y = v[vi2 * 3 + 1];
-    float v2z = v[vi2 * 3 + 2];
-    float v3x = v[vi3 * 3 + 0];
-    float v3y = v[vi3 * 3 + 1];
-    float v3z = v[vi3 * 3 + 2];
+    float v0x = data.v[vi0 * 3 + 0];
+    float v0y = data.v[vi0 * 3 + 1];
+    float v0z = data.v[vi0 * 3 + 2];
+    float v1x = data.v[vi1 * 3 + 0];
+    float v1y = data.v[vi1 * 3 + 1];
+    float v1z = data.v[vi1 * 3 + 2];
+    float v2x = data.v[vi2 * 3 + 0];
+    float v2y = data.v[vi2 * 3 + 1];
+    float v2z = data.v[vi2 * 3 + 2];
+    float v3x = data.v[vi3 * 3 + 0];
+    float v3y = data.v[vi3 * 3 + 1];
+    float v3z = data.v[vi3 * 3 + 2];
 
     float e02x = v2x - v0x;
     float e02y = v2y - v0y;
@@ -140,19 +141,19 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
     float sqr13 = e13x * e13x + e13y * e13y + e13z * e13z;
     // find nearest edge
     if (sqr02 < sqr13) {
-      indices.push_back(raw_ind[0]);
-      indices.push_back(raw_ind[1]);
-      indices.push_back(raw_ind[2]);
-      indices.push_back(raw_ind[0]);
-      indices.push_back(raw_ind[2]);
-      indices.push_back(raw_ind[3]);
+      data.indices.push_back(raw_ind[0]);
+      data.indices.push_back(raw_ind[1]);
+      data.indices.push_back(raw_ind[2]);
+      data.indices.push_back(raw_ind[0]);
+      data.indices.push_back(raw_ind[2]);
+      data.indices.push_back(raw_ind[3]);
     } else {
-      indices.push_back(raw_ind[0]);
-      indices.push_back(raw_ind[1]);
-      indices.push_back(raw_ind[3]);
-      indices.push_back(raw_ind[1]);
-      indices.push_back(raw_ind[2]);
-      indices.push_back(raw_ind[3]);
+      data.indices.push_back(raw_ind[0]);
+      data.indices.push_back(raw_ind[1]);
+      data.indices.push_back(raw_ind[3]);
+      data.indices.push_back(raw_ind[1]);
+      data.indices.push_back(raw_ind[2]);
+      data.indices.push_back(raw_ind[3]);
     }
     // triangulate polygon with earcut method
   } else if (npolys > 4) {
@@ -167,13 +168,13 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
       i0_2 = raw_ind[j];
       auto vi0_2 = size_t(i0_2.fv);
 
-      float v0x = v[vi0 * 3 + 0];
-      float v0y = v[vi0 * 3 + 1];
-      float v0z = v[vi0 * 3 + 2];
+      float v0x = data.v[vi0 * 3 + 0];
+      float v0y = data.v[vi0 * 3 + 1];
+      float v0z = data.v[vi0 * 3 + 2];
 
-      float v0x_2 = v[vi0_2 * 3 + 0];
-      float v0y_2 = v[vi0_2 * 3 + 1];
-      float v0z_2 = v[vi0_2 * 3 + 2];
+      float v0x_2 = data.v[vi0_2 * 3 + 0];
+      float v0y_2 = data.v[vi0_2 * 3 + 1];
+      float v0z_2 = data.v[vi0_2 * 3 + 2];
 
       const Point3D point1 = {v0x, v0y, v0z};
       const Point3D point2 = {v0x_2, v0y_2, v0z_2};
@@ -190,7 +191,7 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
     float length_n = GetLength(n1);
     // Check if zero length normal
     if (length_n <= 0) {
-      m_stat = Status::invalidFile;
+      stat = Status::kInvalidFile;
       return;
     }
     // Negative is to flip the normal to the correct direction
@@ -223,14 +224,14 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
     for (size_t k = 0; k < npolys; k++) {
       i0 = raw_ind[k];
       auto vi0 = size_t(i0.fv);
-      if (3 * vi0 + 2 >= v.size()) {
-        m_stat = Status::invalidFile;
+      if (3 * vi0 + 2 >= data.v.size()) {
+        stat = Status::kInvalidFile;
         return;
       }
 
-      float v0x = v[vi0 * 3 + 0];
-      float v0y = v[vi0 * 3 + 1];
-      float v0z = v[vi0 * 3 + 2];
+      float v0x = data.v[vi0 * 3 + 0];
+      float v0y = data.v[vi0 * 3 + 1];
+      float v0z = data.v[vi0 * 3 + 2];
 
       Point3D polypoint = {v0x, v0y, v0z};
       Point3D loc = WorldToLocal(polypoint, axis_u, axis_v, axis_w);
@@ -240,19 +241,20 @@ void Data::ProcessPolygon(const std::vector<Index>& raw_ind,
     polygon.push_back(polyline);
     std::vector<unsigned int> order = mapbox::earcut(polygon);
     if (order.size() % 3 != 0) {
-      m_stat = Status::invalidFile;
+      stat = Status::kInvalidFile;
       return;
     }
     for (auto& i : order) {
-      indices.push_back(raw_ind[i]);
+      data.indices.push_back(raw_ind[i]);
     }
   } else {
     // polygon is a triangle just move it in
-    std::move(raw_ind.begin(), raw_ind.end(), std::back_inserter(indices));
+    std::move(raw_ind.begin(), raw_ind.end(), std::back_inserter(data.indices));
   }
 }
 
-const char* Data::ParseVertex(const char* ptr, std::vector<float>& array) {
+const char* ParseVertex(const char* ptr, std::vector<float>& array, float max[],
+                        float min[]) {
   float vert;
   char* end = nullptr;
   char type = *ptr++;
@@ -261,7 +263,7 @@ const char* Data::ParseVertex(const char* ptr, std::vector<float>& array) {
   for (int i = 0; i < vert_max; ++i) {
     vert = std::strtof(ptr, &end);
     if (end == ptr) {
-      m_stat = Status::invalidFile;
+      stat = Status::kInvalidFile;
       break;
     }
     // if it is a position get max
@@ -276,22 +278,22 @@ const char* Data::ParseVertex(const char* ptr, std::vector<float>& array) {
   return ptr;
 }
 
-const char* Data::ParseFacet(const char* ptr) {
+const char* ParseFacet(const char* ptr, Data& data) {
   char* end = nullptr;
   long int tmp_i;
-  unsigned int start_i = edges.size();
+  unsigned int start_i = data.edges.size();
   std::vector<Index> raw_ind;
   size_t npolys = 0;
   while (*ptr != '\n') {
     Index idx = {};
     tmp_i = std::strtol(ptr, &end, 10);
     if (tmp_i < 0) {
-      idx.fv = v.size() / 3 - static_cast<unsigned int>(-tmp_i);
+      idx.fv = data.v.size() / 3 - static_cast<unsigned int>(-tmp_i);
     } else if (tmp_i > 0) {
       idx.fv = static_cast<unsigned int>(tmp_i) - 1;
     }
     if (end == ptr) {
-      m_stat = Status::invalidFile;
+      stat = Status::kInvalidFile;
       break;
     }
     ptr = end;
@@ -300,12 +302,12 @@ const char* Data::ParseFacet(const char* ptr) {
       if (IsDigit(*ptr)) {
         tmp_i = std::strtol(ptr, &end, 10);
         if (tmp_i < 0) {
-          idx.ft = vt.size() / 2 - static_cast<unsigned int>(-tmp_i);
+          idx.ft = data.vt.size() / 2 - static_cast<unsigned int>(-tmp_i);
         } else if (tmp_i > 0) {
           idx.ft = static_cast<unsigned int>(tmp_i) - 1;
         }
         if (end == ptr) {
-          m_stat = Status::invalidFile;
+          stat = Status::kInvalidFile;
           break;
         }
         ptr = end;
@@ -314,37 +316,37 @@ const char* Data::ParseFacet(const char* ptr) {
     if (*ptr == '/') {
       tmp_i = std::strtol(++ptr, &end, 10);
       if (tmp_i < 0) {
-        idx.fn = vn.size() / 3 - static_cast<unsigned int>(-tmp_i);
+        idx.fn = data.vn.size() / 3 - static_cast<unsigned int>(-tmp_i);
       } else if (tmp_i > 0) {
         idx.fn = static_cast<unsigned int>(tmp_i) - 1;
       }
       if (end == ptr) {
-        m_stat = Status::invalidFile;
+        stat = Status::kInvalidFile;
         break;
       }
       ptr = end;
     }
     // wireframe facets
-    if (edges.size() != start_i) {
-      edges.push_back(idx.fv);
-      uv.push_back(idx.ft);
+    if (data.edges.size() != start_i) {
+      data.edges.push_back(idx.fv);
+      data.uv.push_back(idx.ft);
     }
-    edges.push_back(idx.fv);
-    uv.push_back(idx.ft);
+    data.edges.push_back(idx.fv);
+    data.uv.push_back(idx.ft);
     // push parsed indices
     raw_ind.push_back(idx);
     ptr = SkipSpace(ptr);
     ++npolys;
   }
-  edges.push_back(edges[start_i]);
-  uv.push_back(uv[start_i]);
-  ProcessPolygon(raw_ind, npolys);
+  data.edges.push_back(data.edges[start_i]);
+  data.uv.push_back(data.uv[start_i]);
+  ProcessPolygon(data, raw_ind, npolys);
   return ptr;
 }
 
-const char* Data::ParseMtl(const char* p) {
+const char* ParseMtl(const char* p, Data& data) {
   std::string path_mtl = GetName(&p);
-  std::ifstream mtl_file(dir_path + path_mtl, std::ifstream::binary);
+  std::ifstream mtl_file(data.dir_path + path_mtl, std::ifstream::binary);
   if (mtl_file.is_open()) {
     NewMtl new_mtl;
     bool found_d = false;
@@ -365,7 +367,7 @@ const char* Data::ParseMtl(const char* p) {
           if (ptr[0] == 'e' && ptr[1] == 'w' && ptr[2] == 'm' &&
               ptr[3] == 't' && ptr[4] == 'l' && IsSpace(ptr[5])) {
             if (!new_mtl.name.empty()) {
-              mtl.push_back(std::move(new_mtl));
+              data.mtl.push_back(std::move(new_mtl));
               new_mtl = {};
             }
             ptr += 5;
@@ -425,7 +427,7 @@ const char* Data::ParseMtl(const char* p) {
               }
             }
             if (map_ptr && std::filesystem::path(*map_ptr).is_relative()) {
-              *map_ptr = dir_path + *map_ptr;
+              *map_ptr = data.dir_path + *map_ptr;
             }
           }
           break;
@@ -435,7 +437,7 @@ const char* Data::ParseMtl(const char* p) {
       ptr = SkipLine(ptr);
     }
     if (!new_mtl.name.empty()) {
-      mtl.push_back(new_mtl);
+      data.mtl.push_back(new_mtl);
     }
     delete[] buf;
     mtl_file.close();
@@ -443,14 +445,14 @@ const char* Data::ParseMtl(const char* p) {
   return p;
 }
 
-const char* Data::ParseUsemtl(const char* ptr) {
+const char* ParseUsemtl(const char* ptr, Data& data) {
   std::string use_mtl_name = GetName(&ptr);
-  for (unsigned int i = 0; i < mtl.size(); ++i) {
-    if (mtl[i].name == use_mtl_name) {
-      usemtl.push_back({i, 0, 0});
-      if (!indices.empty()) {
-        usemtl[usemtl.size() - 2].offset_fv = indices.size();
-        usemtl[usemtl.size() - 2].offset_uv = uv.size();
+  for (unsigned int i = 0; i < data.mtl.size(); ++i) {
+    if (data.mtl[i].name == use_mtl_name) {
+      data.usemtl.push_back({i, 0, 0});
+      if (!data.indices.empty()) {
+        data.usemtl[data.usemtl.size() - 2].offset_fv = data.indices.size();
+        data.usemtl[data.usemtl.size() - 2].offset_uv = data.uv.size();
       }
       break;
     }
@@ -458,46 +460,46 @@ const char* Data::ParseUsemtl(const char* ptr) {
   return ptr;
 }
 
-void Data::ParseBuffer(const char* ptr, const char* end) {
+void ParseBuffer(const char* ptr, const char* end, Data& data) {
   while (ptr != end) {
     ptr = SkipSpace(ptr);
     if (*ptr == 'v') {
       ++ptr;
       if (*ptr == ' ' || *ptr == '\t') {
-        ptr = ParseVertex(ptr, v);
-        ++vertex_count;
+        ptr = ParseVertex(ptr, data.v, data.max, data.min);
+        ++data.vertex_count;
       } else if (*ptr == 'n') {
-        ptr = ParseVertex(ptr, vn);
+        ptr = ParseVertex(ptr, data.vn, data.max, data.min);
       } else if (*ptr == 't') {
-        ptr = ParseVertex(ptr, vt);
+        ptr = ParseVertex(ptr, data.vt, data.max, data.min);
       }
     } else if (*ptr == 'f') {
       ++ptr;
       if (*ptr == ' ' || *ptr == '\t') {
-        ptr = ParseFacet(ptr);
-        ++facet_count;
+        ptr = ParseFacet(ptr, data);
+        ++data.facet_count;
       }
     } else if (*ptr == 'm') {
       ++ptr;
       if (ptr[0] == 't' && ptr[1] == 'l' && ptr[2] == 'l' && ptr[3] == 'i' &&
           ptr[4] == 'b' && IsSpace(ptr[5])) {
-        ptr = ParseMtl(ptr + 6);
+        ptr = ParseMtl(ptr + 6, data);
       }
     } else if (*ptr == 'u') {
       ++ptr;
       if (ptr[0] == 's' && ptr[1] == 'e' && ptr[2] == 'm' && ptr[3] == 't' &&
           ptr[4] == 'l' && IsSpace(ptr[5])) {
-        ptr = ParseUsemtl(ptr + 6);
+        ptr = ParseUsemtl(ptr + 6, data);
       }
     }
     ptr = SkipLine(ptr);
   }
 }
 
-void Data::ReadFile(std::string_view path) {
+void ReadFile(std::string_view path, Data& data) {
   std::ifstream file(path.data(), std::ifstream::binary);
   if (!file.is_open()) {
-    m_stat = Status::noFile;
+    stat = Status::kNoFile;
     return;
   }
   unsigned int read, bytes;
@@ -505,16 +507,16 @@ void Data::ReadFile(std::string_view path) {
   {
     std::filesystem::path p(path);
     p.remove_filename();
-    dir_path = p.generic_string();
+    data.dir_path = p.generic_string();
   }
-  char* buffer = new char[2 * bufferSize];
+  char* buffer = new char[2 * kBufferSize];
   start = buffer;
   for (;;) {
-    read = file.readsome(start, bufferSize);
+    read = file.readsome(start, kBufferSize);
     if (!read && start == buffer) {
       break;
     }
-    if (read < bufferSize) {
+    if (read < kBufferSize) {
       if (!read || start[read - 1] != '\n') {
         start[read++] = '\n';
       }
@@ -534,44 +536,52 @@ void Data::ReadFile(std::string_view path) {
       break;
     }
     ++last;
-    ParseBuffer(buffer, last);
+    ParseBuffer(buffer, last, data);
     bytes = static_cast<unsigned int>(end - last);
     std::memmove(buffer, last, bytes);
     start = buffer + bytes;
   }
-  if (mtl.empty()) {
-    mtl.emplace_back(NewMtl{});
+  if (data.mtl.empty()) {
+    data.mtl.emplace_back(NewMtl{});
   }
-  if (usemtl.empty()) {
-    usemtl.emplace_back(UseMtl{});
+  if (data.usemtl.empty()) {
+    data.usemtl.emplace_back(UseMtl{});
   }
-  usemtl.back().offset_fv = indices.size();
-  usemtl.back().offset_uv = uv.size();
+  data.usemtl.back().offset_fv = data.indices.size();
+  data.usemtl.back().offset_uv = data.uv.size();
   delete[] buffer;
   file.close();
 }
 
-bool Data::FromFile(std::string_view path) {
-  ReadFile(path);
-  if (m_stat != Status::noExc) {
-    Flush();
-    return false;
+inline void Flush(Data* data) {
+  std::vector<NewMtl>().swap(data->mtl);
+  std::vector<UseMtl>().swap(data->usemtl);
+  std::vector<Index>().swap(data->indices);
+  std::vector<unsigned int>().swap(data->edges);
+  std::vector<unsigned int>().swap(data->uv);
+
+  std::vector<float>().swap(data->vn);
+  std::vector<float>().swap(data->vt);
+  std::vector<float>().swap(data->v);
+
+  std::string().swap(data->dir_path);
+}
+
+}  // namespace
+
+std::pair<Data*, Status> Parse(std::string_view path) {
+  stat = Status::kNoExc;
+  auto data = new Data;
+
+  std::fill(data->max, data->max + 3, std::numeric_limits<float>::min());
+  std::fill(data->min, data->min + 3, std::numeric_limits<float>::max());
+
+  ReadFile(path, *data);
+  if (stat != Status::kNoExc) {
+    Flush(data);
   }
-  return true;
+
+  return std::pair(data, stat);
 }
 
-inline void Data::Flush() {
-  std::vector<NewMtl>().swap(mtl);
-  std::vector<UseMtl>().swap(usemtl);
-  std::vector<Index>().swap(indices);
-  std::vector<unsigned int>().swap(edges);
-  std::vector<unsigned int>().swap(uv);
-
-  std::vector<float>().swap(vn);
-  std::vector<float>().swap(vt);
-  std::vector<float>().swap(v);
-
-  std::string().swap(dir_path);
-}
-
-}  // namespace obj
+}  // namespace obj::DataParser

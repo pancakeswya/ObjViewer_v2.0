@@ -5,7 +5,6 @@ NAME         := ObjViewer_v2
 APP          := $(if $(filter Linux,$(OS)),$(NAME),$(NAME).app)
 
 SRC_DIR      := src
-INC_DIR      := includes
 BUILD_DIR    := build
 LIB_DIR      := src/libobj
 DOCS_DIR     := docs
@@ -53,7 +52,7 @@ dist:
 	mv $(NAME).tgz $(HOME)/Desktop
 
 check-style:
-	find $(SRC_DIR) $(INC_DIR) -name '*.cc' -o -name '*.c' -o -name '*.h' | xargs clang-format -style=google -n
+	find $(SRC_DIR) -name '*.cc' -o -name '*.c' -o -name '*.h' | xargs clang-format -style=google -n
 
 .PHONY: test gcov_report check-valgrind
 

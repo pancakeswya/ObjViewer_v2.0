@@ -1,7 +1,7 @@
 #ifndef OBJVIEWER_V2_SRC_UTIL_GIFMAKER_H
 #define OBJVIEWER_V2_SRC_UTIL_GIFMAKER_H
 
-#include <QFileDialog>
+#include <QImage>
 #include <QThread>
 #include <utility>
 

@@ -2,12 +2,11 @@
 #define OBJVIEWER_V2_SRC_LOADER_LOADER_H
 
 #include <QOpenGLBuffer>
-#include <QOpenGLFunctions_2_1>
+#include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
-#include <QOpenGLTexture>
 
 #include "../model/mesh.h"
 
@@ -41,18 +40,19 @@ using ShaderPaths = std::pair<const char*, const char*>;
 using MaterialData = std::vector<NewMtl>;
 
 struct Maps {
-    QOpenGLTexture ambient;
-    QOpenGLTexture diffuse;
-    QOpenGLTexture specular;
-    Maps();
-    ~Maps() = default;
+  QOpenGLTexture ambient;
+  QOpenGLTexture diffuse;
+  QOpenGLTexture specular;
+  Maps();
+  ~Maps() = default;
 };
 
-inline Maps::Maps() : ambient(QOpenGLTexture::Target2D),
-                      diffuse(QOpenGLTexture::Target2D),
-                      specular(QOpenGLTexture::Target2D) {}
+inline Maps::Maps()
+    : ambient(QOpenGLTexture::Target2D),
+      diffuse(QOpenGLTexture::Target2D),
+      specular(QOpenGLTexture::Target2D) {}
 
-class Loader : public QOpenGLWidget, protected QOpenGLFunctions_2_1 {
+class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   Q_OBJECT
  public:
   explicit Loader(QWidget* parent = nullptr);
@@ -94,12 +94,9 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions_2_1 {
   void ProgramDestroy();
 
  private:
-  GLint u_pvm_;
-  GLint u_vm_;
-  GLint u_mat_normal_;
-  GLint u_color_;
+  GLint locations_[11];
   Maps* maps_{};
-  Mesh mesh_{};
+  Mesh* mesh_{};
   QOpenGLBuffer vbo_;
   QOpenGLBuffer ebo_;
   QOpenGLShaderProgram* program_{};

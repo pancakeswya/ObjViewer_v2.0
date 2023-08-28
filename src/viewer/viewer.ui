@@ -14,7 +14,7 @@
    <string>ObjViewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../resources.qrc">
+   <iconset resource="../../resources/resources.qrc">
     <normaloff>:/images/ObjViewer_icon.png</normaloff>:/images/ObjViewer_icon.png</iconset>
   </property>
   <widget class="QWidget" name="central_widget">
@@ -23,7 +23,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,0">
     <item>
-     <widget class="Loader" name="obj_widget">
+     <widget class="Loader" name="obj_loader">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -1787,11 +1787,11 @@ QDoubleSpinBox::up-button  {
   <customwidget>
    <class>Loader</class>
    <extends>QOpenGLWidget</extends>
-   <header>src/loader/loader.h</header>
+   <header>src/viewer/loader.h</header>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resources.qrc"/>
+  <include location="../../resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

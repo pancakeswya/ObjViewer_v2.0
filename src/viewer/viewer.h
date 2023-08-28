@@ -1,7 +1,6 @@
 #ifndef OBJVIEWER_V2_SRC_VIEWER_VIEWER_H
 #define OBJVIEWER_V2_SRC_VIEWER_VIEWER_H
 
-#include <QColorDialog>
 #include <QMainWindow>
 #include <QSettings>
 

@@ -1,5 +1,5 @@
-#version 400 core
+#version 330
 
-uniform vec3 color;
+uniform vec3 u_color;
 
-void main() { gl_FragColor = vec4(color, 1.0); }
+void main() { gl_FragColor = vec4(u_color, 1.0); }
