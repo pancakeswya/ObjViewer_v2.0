@@ -118,7 +118,7 @@ std::pair<Mesh*, Status> FromFile(std::string_view path) {
     DataToMesh(data, mesh);
   }
   delete data;
-  return {mesh, stat};
+  return std::pair(mesh, stat);
 }
 
 }  // namespace obj::MeshMaker
