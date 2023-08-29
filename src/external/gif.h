@@ -28,8 +28,8 @@
 // close the file handle and free memory.
 //
 
-#ifndef GIF_H
-#define GIF_H
+#ifndef GIF_H_
+#define GIF_H_
 
 // Define these macros to hook into a custom memory allocator.
 // TEMP_MALLOC and TEMP_FREE will only be called in stack fashion - frees in the
@@ -87,4 +87,4 @@ bool GifEnd(GifWriter* writer);
 }
 #endif
 
-#endif
+#endif // GIF_H_
