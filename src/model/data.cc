@@ -12,7 +12,7 @@ namespace obj::DataParser {
 
 namespace {
 
-static constexpr size_t kBufferSize = 65536;
+constexpr size_t kBufferSize = 65536;
 
 Status stat;
 
