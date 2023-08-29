@@ -8,9 +8,7 @@
 
 #include "data_types.h"
 
-namespace obj {
-
-namespace DataParser {
+namespace obj::DataParser {
 
 struct Index {
   unsigned int fv;
@@ -41,8 +39,6 @@ struct Data {
 
 std::pair<Data*, Status> Parse(std::string_view path);
 
-}  // namespace DataParser
-
-}  // namespace obj
+}  // namespace obj::DataParser
 
 #endif  // OBJVIEWER_V2_SRC_MODEL_DATA_H_
