@@ -47,7 +47,6 @@ void LoadTexture(QOpenGLTexture& texture, std::string_view path) {
 
 Loader::Loader(QWidget* parent)
     : QOpenGLWidget(parent),
-      mesh_(MeshMaker::FromFile("").first),
       vbo_(QOpenGLBuffer::VertexBuffer),
       ebo_(QOpenGLBuffer::IndexBuffer),
       sett_{.proj_type = ProjType::kParallel,
@@ -151,6 +150,10 @@ ShaderPaths Loader::GetShadersPaths() {
 
 void Loader::ProgramCreate() {
   program_ = new QOpenGLShaderProgram(this);
+
+  if (!mesh_) {
+    return;
+  }
 
   auto [v_path, f_path] = GetShadersPaths();
 
@@ -364,6 +367,9 @@ void Loader::initializeGL() {
 }
 
 void Loader::resizeGL(int width, int height) {
+  if (!mesh_) {
+    return;
+  }
   p_mat_.setToIdentity();
   v_mat_.setToIdentity();
   GLfloat size_x = std::abs(mesh_->min_vertex[0] - mesh_->max_vertex[0]);
@@ -392,6 +398,9 @@ void Loader::resizeGL(int width, int height) {
 }
 
 void Loader::paintGL() {
+  if (!mesh_) {
+    return;
+  }
   glClearColor(sett_.color_bg.redF(), sett_.color_bg.greenF(),
                sett_.color_bg.blueF(), sett_.color_bg.alphaF());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

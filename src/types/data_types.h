@@ -1,6 +1,9 @@
 #ifndef OBJVIEWER_V2_TYPES_DATA_TYPES_H_
 #define OBJVIEWER_V2_TYPES_DATA_TYPES_H_
 
+#include <string>
+#include <vector>
+
 namespace obj {
 
 enum class Status : short int { kNoExc, kInvalidFile, kNoFile };
@@ -26,8 +29,6 @@ struct UseMtl {
   unsigned int offset_uv;
 };
 
-inline NewMtl::NewMtl() : Ns(32.0f), d(1.0f), Kd{0.7f, 0.7f, 0.7f} {}
-
 struct Mesh {
   bool has_textures{};
   bool has_normals{};
@@ -51,6 +52,8 @@ struct Mesh {
   std::vector<UseMtl> usemtl;
   std::vector<NewMtl> mtl;
 };
+
+inline NewMtl::NewMtl() : Ns(32.0f), d(1.0f), Kd{0.7f, 0.7f, 0.7f} {}
 
 }  // namespace obj
 

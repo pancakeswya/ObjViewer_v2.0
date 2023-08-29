@@ -4,10 +4,6 @@ project(ObjViewer_v2 VERSION 2.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -O3")
@@ -41,6 +37,10 @@ add_library(ObjMesh STATIC
     src/model/mesh.cc)
 
 target_link_libraries(ObjMesh ObjData)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
 add_library(ObjLoader STATIC
     src/viewer/loader.cc
