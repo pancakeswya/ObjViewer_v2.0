@@ -266,8 +266,8 @@ void Viewer::OnPushButtonOpenFileClicked() {
   auto stat = ui_->obj_loader->Open(filepath);
   if (stat != Status::kNoExc) {
     QMessageBox::critical(this, "Error",
-                          QStringList({"No errors occurred", "Invalid file",
-                                       "No obj file to open"})[int(stat)]);
+                          QStringList({"Invalid file",
+                                       "No obj file to open"})[int(stat) - 1]);
   }
   ui_->label_file_name_text->setText(fileInfo.fileName());
   ui_->label_vertex_am_int->setText(
