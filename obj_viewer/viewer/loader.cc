@@ -5,7 +5,7 @@
 #include <QPainter>
 #include <cmath>
 
-namespace obj {
+namespace objv {
 
 namespace {
 
@@ -465,4 +465,4 @@ void Loader::paintGL() {
   program_->release();
 }
 
-}  // namespace obj
+}  // namespace objv

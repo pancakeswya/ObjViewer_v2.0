@@ -1,14 +1,14 @@
-#ifndef OBJVIEWER_V2_SRC_MODEL_DATA_H_
-#define OBJVIEWER_V2_SRC_MODEL_DATA_H_
+#ifndef OBJ_VIEWER_LIB_DATA_PARSER_DATA_PARSER_H_
+#define OBJ_VIEWER_LIB_DATA_PARSER_DATA_PARSER_H_
 
 #include <limits>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "data_types.h"
+#include "obj_viewer/types/data_types.h"
 
-namespace obj::DataParser {
+namespace objv::DataParser {
 
 struct Index {
   unsigned int fv;
@@ -39,6 +39,6 @@ struct Data {
 
 std::pair<Data*, Status> Parse(std::string_view path);
 
-}  // namespace obj::DataParser
+}  // namespace objv::DataParser
 
-#endif  // OBJVIEWER_V2_SRC_MODEL_DATA_H_
+#endif  // OBJ_VIEWER_LIB_DATA_PARSER_DATA_PARSER_H_

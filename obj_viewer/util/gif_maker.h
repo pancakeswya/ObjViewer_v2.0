@@ -1,11 +1,11 @@
-#ifndef OBJVIEWER_V2_SRC_UTIL_GIFMAKER_H
-#define OBJVIEWER_V2_SRC_UTIL_GIFMAKER_H
+#ifndef OBJ_VIEWER_UTIL_GIFMAKER_H_
+#define OBJ_VIEWER_UTIL_GIFMAKER_H_
 
 #include <QImage>
 #include <QThread>
 #include <utility>
 
-namespace obj {
+namespace objv {
 
 class GifMaker : public QThread {
   Q_OBJECT
@@ -24,6 +24,6 @@ class GifMaker : public QThread {
 inline GifMaker::GifMaker(const QImage &frame, QString path)
     : frame_(frame), path_(std::move(path)) {}
 
-}  // namespace obj
+}  // namespace objv
 
-#endif  // OBJVIEWER_V2_SRC_UTIL_GIFMAKER_H
+#endif  // OBJ_VIEWER_UTIL_GIFMAKER_H_

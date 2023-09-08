@@ -7,9 +7,9 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 
-#include "../util/gif_maker.h"
+#include "obj_viewer/util/gif_maker.h"
 
-namespace obj {
+namespace objv {
 
 Viewer::Viewer(QWidget* parent)
     : QMainWindow(parent),
@@ -404,4 +404,4 @@ void Viewer::OnPushButtonGifClicked() {
   gif->start();
 }
 
-}  // namespace obj
+}  // namespace objv

@@ -1,8 +1,8 @@
 #include "gif_maker.h"
 
-#include "gif.h"
+#include "external/gif.h"
 
-namespace obj {
+namespace objv {
 
 void GifMaker::run() {
   int delay = 100;
@@ -33,4 +33,4 @@ void GifMaker::run() {
   }
 }
 
-}  // namespace obj
+}  // namespace objv

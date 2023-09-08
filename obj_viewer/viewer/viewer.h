@@ -1,12 +1,12 @@
-#ifndef OBJVIEWER_V2_SRC_VIEWER_VIEWER_H
-#define OBJVIEWER_V2_SRC_VIEWER_VIEWER_H
+#ifndef OBJ_VIEWER_VIEWER_VIEWER_H_
+#define OBJ_VIEWER_VIEWER_VIEWER_H_
 
 #include <QMainWindow>
 #include <QSettings>
 
-#include "./ui_viewer.h"
+#include "ui_viewer.h"
 
-namespace obj {
+namespace objv {
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -45,6 +45,6 @@ class Viewer : public QMainWindow {
   QSettings settings_;
 };
 
-}  // namespace obj
+}  // namespace objv
 
-#endif  // OBJVIEWER_V2_SRC_VIEWER_VIEWER_H
+#endif  // OBJ_VIEWER_VIEWER_VIEWER_H_

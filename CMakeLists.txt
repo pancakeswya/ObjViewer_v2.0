@@ -23,40 +23,41 @@ endif()
 
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets ${QT_OPENGL_WIDGETS_MODULE} REQUIRED)
 
-include_directories("src/external/" "src/types/")
+include_directories(".")
 
 add_library(Gif STATIC
-    src/external/gif.c)
+    external/gif.h
+    external/gif.c)
 
-add_library(ObjData STATIC
-    src/model/data.h
-    src/model/data.cc)
+add_library(DataParser STATIC
+    obj_viewer/lib/data_parser/data_parser.h
+    obj_viewer/lib/data_parser/data_parser.cc)
 
-add_library(ObjMesh STATIC
-    src/model/mesh.h
-    src/model/mesh.cc)
+add_library(MeshMaker STATIC
+    obj_viewer/lib/mesh_maker/mesh_maker.h
+    obj_viewer/lib/mesh_maker/mesh_maker.cc)
 
-target_link_libraries(ObjMesh ObjData)
+target_link_libraries(MeshMaker DataParser)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 add_library(ObjLoader STATIC
-    src/viewer/loader.cc
-    src/viewer/loader.h)
+    obj_viewer/viewer/loader.cc
+    obj_viewer/viewer/loader.h)
 
-target_link_libraries(ObjLoader Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} ObjMesh)
+target_link_libraries(ObjLoader Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} MeshMaker)
 
 set (QRC_FILES resources/resources.qrc)
 
 set(PROJECT_SOURCES
-    src/main.cc
-    src/util/gif_maker.cc
-    src/util/gif_maker.h
-    src/viewer/viewer.cc
-    src/viewer/viewer.h
-    src/viewer/viewer.ui
+    obj_viewer/main.cc
+    obj_viewer/util/gif_maker.cc
+    obj_viewer/util/gif_maker.h
+    obj_viewer/viewer/viewer.cc
+    obj_viewer/viewer/viewer.h
+    obj_viewer/viewer/viewer.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

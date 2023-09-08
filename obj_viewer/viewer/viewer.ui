@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>obj::Viewer</class>
+ <class>objv::Viewer</class>
  <widget class="QMainWindow" name="obj::Viewer">
   <property name="geometry">
    <rect>
@@ -14,7 +14,7 @@
    <string>ObjViewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../resources/resources.qrc">
+   <iconset resource="resources/resources.qrc">
     <normaloff>:/images/ObjViewer_icon.png</normaloff>:/images/ObjViewer_icon.png</iconset>
   </property>
   <widget class="QWidget" name="central_widget">
@@ -1787,11 +1787,11 @@ QDoubleSpinBox::up-button  {
   <customwidget>
    <class>Loader</class>
    <extends>QOpenGLWidget</extends>
-   <header>src/viewer/loader.h</header>
+   <header>obj_viewer/viewer/loader.h</header>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resources/resources.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

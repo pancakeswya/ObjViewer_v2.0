@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "mesh_maker.h"
 
 #include <cstring>
 #include <future>
@@ -7,7 +7,7 @@
 #include <set>
 #include <thread>
 
-namespace obj::MeshMaker {
+namespace objv::MeshMaker {
 
 namespace {
 
@@ -121,4 +121,4 @@ std::pair<Mesh*, Status> FromFile(std::string_view path) {
   return std::pair(mesh, stat);
 }
 
-}  // namespace obj::MeshMaker
+}  // namespace objv::MeshMaker

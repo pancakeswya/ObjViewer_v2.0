@@ -1,5 +1,5 @@
-#ifndef OBJVIEWER_V2_SRC_LOADER_LOADER_H
-#define OBJVIEWER_V2_SRC_LOADER_LOADER_H
+#ifndef OBJ_VIEWER_VIEWER_LOADER_LOADER_H_
+#define OBJ_VIEWER_VIEWER_LOADER_LOADER_H_
 
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
@@ -8,9 +8,9 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 
-#include "../model/mesh.h"
+#include "obj_viewer/lib/mesh_maker/mesh_maker.h"
 
-namespace obj {
+namespace objv {
 
 enum class ProjType : bool { kParallel, kCentral };
 
@@ -112,6 +112,6 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   QImage frame_;
 };
 
-}  // namespace obj
+}  // namespace objv
 
-#endif  // OBJVIEWER_V2_SRC_LOADER_LOADER_H
+#endif  // OBJ_VIEWER_VIEWER_LOADER_LOADER_H_

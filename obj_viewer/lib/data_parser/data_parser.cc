@@ -1,4 +1,4 @@
-#include "data.h"
+#include "data_parser.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -6,9 +6,9 @@
 #include <fstream>
 #include <map>
 
-#include "earcut.h"
+#include "external/earcut.h"
 
-namespace obj::DataParser {
+namespace objv::DataParser {
 
 namespace {
 
@@ -221,7 +221,7 @@ void ProcessPolygon(Data& data, const std::vector<Index>& raw_ind,
     // picking a plane aligned with an axis (which can flip polygons).
 
     // Fill polygon data(facevarying vertices).
-    for (size_t k = 0; k < npolys; k++) {
+    for (size_t k = 0; k < npolys; ++k) {
       i0 = raw_ind[k];
       auto vi0 = size_t(i0.fv);
       if (3 * vi0 + 2 >= data.v.size()) {
@@ -236,7 +236,7 @@ void ProcessPolygon(Data& data, const std::vector<Index>& raw_ind,
       Point3D polypoint = {v0x, v0y, v0z};
       Point3D loc = WorldToLocal(polypoint, axis_u, axis_v, axis_w);
 
-      polyline.emplace_back(std::make_pair(loc.x, loc.y));
+      polyline.emplace_back(std::pair(loc.x, loc.y));
     }
     polygon.push_back(polyline);
     std::vector<unsigned int> order = mapbox::earcut(polygon);
@@ -287,42 +287,39 @@ const char* ParseFacet(const char* ptr, Data& data) {
   while (*ptr != '\n') {
     Index idx = {};
     tmp_i = std::strtol(ptr, &end, 10);
-    if (tmp_i < 0) {
+    if (end == ptr || tmp_i == 0) {
+      stat = Status::kInvalidFile;
+      break;
+    } else if (tmp_i < 0) {
       idx.fv = data.v.size() / 3 - static_cast<unsigned int>(-tmp_i);
     } else if (tmp_i > 0) {
       idx.fv = static_cast<unsigned int>(tmp_i) - 1;
-    }
-    if (end == ptr) {
-      stat = Status::kInvalidFile;
-      break;
     }
     ptr = end;
     if (*ptr == '/') {
       ++ptr;
       if (IsDigit(*ptr)) {
         tmp_i = std::strtol(ptr, &end, 10);
-        if (tmp_i < 0) {
+        if (end == ptr || tmp_i == 0) {
+          stat = Status::kInvalidFile;
+          break;
+        } else if (tmp_i < 0) {
           idx.ft = data.vt.size() / 2 - static_cast<unsigned int>(-tmp_i);
         } else if (tmp_i > 0) {
           idx.ft = static_cast<unsigned int>(tmp_i) - 1;
-        }
-        if (end == ptr) {
-          stat = Status::kInvalidFile;
-          break;
         }
         ptr = end;
       }
     }
     if (*ptr == '/') {
       tmp_i = std::strtol(++ptr, &end, 10);
-      if (tmp_i < 0) {
+      if (end == ptr || tmp_i == 0) {
+        stat = Status::kInvalidFile;
+        break;
+      } else if (tmp_i < 0) {
         idx.fn = data.vn.size() / 3 - static_cast<unsigned int>(-tmp_i);
       } else if (tmp_i > 0) {
         idx.fn = static_cast<unsigned int>(tmp_i) - 1;
-      }
-      if (end == ptr) {
-        stat = Status::kInvalidFile;
-        break;
       }
       ptr = end;
     }
@@ -584,4 +581,4 @@ std::pair<Data*, Status> Parse(std::string_view path) {
   return std::pair(data, stat);
 }
 
-}  // namespace obj::DataParser
+}  // namespace objv::DataParser
