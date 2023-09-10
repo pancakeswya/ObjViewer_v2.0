@@ -12,7 +12,8 @@ New version of ObjViewer which fully written in C++(first version is in private 
 ![](misc/shading.gif)
 - Edge and vertex settings for wireframe view type
 - Settings of last session are gonna be saved
-- Transformations(move, rotate, scale)
+- Transformations(move, rotate, scale), gif is a bit laggy
 ![](misc/transform.gif)
 - Material properties + you can replace texture
 ![](misc/material.png)
+- A lot more small features, you should check it out
