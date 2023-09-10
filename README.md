@@ -9,7 +9,7 @@ New version of ObjViewer which fully written in C++(first version is in private 
 - Projection(parallel and central)
 ![](misc/proj_type.gif)
 - Shading(smooth and flat)
-![](misc/shading_type.gif)
+![](misc/shading.gif)
 - Edge and vertex settings for wireframe view type
 - Settings of last session are gonna be saved
 - Transformations(move, rotate, scale)
