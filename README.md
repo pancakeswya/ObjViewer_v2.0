@@ -11,4 +11,4 @@ New version of ObjViewer which fully written in C++(first version is in private 
 - Settings of last session are gonna be saved
 - Transformations(move, rotate, scale)
 - Material properties + you can replace texture
-![](mics/view_type.gif)
+![](misc/view_type.gif)
