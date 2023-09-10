@@ -16,4 +16,5 @@ New version of ObjViewer which fully written in C++(first version is in private 
 ![](misc/transform.gif)
 - Material properties + you can replace texture
 ![](misc/material.png)
+- Non triangular faces are triangulated using earcut algorithm, plus more optimization algorithm are implemented
 - A lot more small features, you should check it out
