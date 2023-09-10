@@ -1,0 +1,9 @@
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/Gif.dir
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/DataParser.dir
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/MeshMaker.dir
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/ObjLoader.dir
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/ObjViewer_v2.dir
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/edit_cache.dir
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/rebuild_cache.dir
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/ObjLoader_autogen.dir
+/home/winfordt/ObjViewer_v2.0/build/CMakeFiles/ObjViewer_v2_autogen.dir

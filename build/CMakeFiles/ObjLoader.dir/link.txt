@@ -1,0 +1,2 @@
+/usr/bin/ar qc libObjLoader.a CMakeFiles/ObjLoader.dir/ObjLoader_autogen/mocs_compilation.cpp.o CMakeFiles/ObjLoader.dir/obj_viewer/viewer/loader.cc.o
+/usr/bin/ranlib libObjLoader.a

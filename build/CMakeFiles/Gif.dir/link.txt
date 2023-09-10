@@ -1,0 +1,2 @@
+/usr/bin/ar qc libGif.a CMakeFiles/Gif.dir/external/gif.c.o
+/usr/bin/ranlib libGif.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libDataParser.a CMakeFiles/DataParser.dir/obj_viewer/lib/data_parser/data_parser.cc.o
+/usr/bin/ranlib libDataParser.a

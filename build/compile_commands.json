@@ -1,0 +1,52 @@
+[
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/gcc  -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/. -g -o CMakeFiles/Gif.dir/external/gif.c.o -c /home/winfordt/ObjViewer_v2.0/external/gif.c",
+  "file": "/home/winfordt/ObjViewer_v2.0/external/gif.c"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++  -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/.  -Wall -Werror -Wextra -O3 -g -std=gnu++17 -o CMakeFiles/DataParser.dir/obj_viewer/lib/data_parser/data_parser.cc.o -c /home/winfordt/ObjViewer_v2.0/obj_viewer/lib/data_parser/data_parser.cc",
+  "file": "/home/winfordt/ObjViewer_v2.0/obj_viewer/lib/data_parser/data_parser.cc"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++  -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/.  -Wall -Werror -Wextra -O3 -g -std=gnu++17 -o CMakeFiles/MeshMaker.dir/obj_viewer/lib/mesh_maker/mesh_maker.cc.o -c /home/winfordt/ObjViewer_v2.0/obj_viewer/lib/mesh_maker/mesh_maker.cc",
+  "file": "/home/winfordt/ObjViewer_v2.0/obj_viewer/lib/mesh_maker/mesh_maker.cc"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/build/ObjLoader_autogen/include -I/home/winfordt/ObjViewer_v2.0/. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++  -Wall -Werror -Wextra -O3 -g -fPIC -std=gnu++17 -o CMakeFiles/ObjLoader.dir/ObjLoader_autogen/mocs_compilation.cpp.o -c /home/winfordt/ObjViewer_v2.0/build/ObjLoader_autogen/mocs_compilation.cpp",
+  "file": "/home/winfordt/ObjViewer_v2.0/build/ObjLoader_autogen/mocs_compilation.cpp"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/build/ObjLoader_autogen/include -I/home/winfordt/ObjViewer_v2.0/. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++  -Wall -Werror -Wextra -O3 -g -fPIC -std=gnu++17 -o CMakeFiles/ObjLoader.dir/obj_viewer/viewer/loader.cc.o -c /home/winfordt/ObjViewer_v2.0/obj_viewer/viewer/loader.cc",
+  "file": "/home/winfordt/ObjViewer_v2.0/obj_viewer/viewer/loader.cc"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/include -I/home/winfordt/ObjViewer_v2.0/. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL  -Wall -Werror -Wextra -O3 -g -fPIC -std=gnu++17 -o CMakeFiles/ObjViewer_v2.dir/ObjViewer_v2_autogen/mocs_compilation.cpp.o -c /home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/mocs_compilation.cpp",
+  "file": "/home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/mocs_compilation.cpp"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/include -I/home/winfordt/ObjViewer_v2.0/. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL  -Wall -Werror -Wextra -O3 -g -fPIC -std=gnu++17 -o CMakeFiles/ObjViewer_v2.dir/obj_viewer/main.cc.o -c /home/winfordt/ObjViewer_v2.0/obj_viewer/main.cc",
+  "file": "/home/winfordt/ObjViewer_v2.0/obj_viewer/main.cc"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/include -I/home/winfordt/ObjViewer_v2.0/. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL  -Wall -Werror -Wextra -O3 -g -fPIC -std=gnu++17 -o CMakeFiles/ObjViewer_v2.dir/obj_viewer/util/gif_maker.cc.o -c /home/winfordt/ObjViewer_v2.0/obj_viewer/util/gif_maker.cc",
+  "file": "/home/winfordt/ObjViewer_v2.0/obj_viewer/util/gif_maker.cc"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/include -I/home/winfordt/ObjViewer_v2.0/. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL  -Wall -Werror -Wextra -O3 -g -fPIC -std=gnu++17 -o CMakeFiles/ObjViewer_v2.dir/obj_viewer/viewer/viewer.cc.o -c /home/winfordt/ObjViewer_v2.0/obj_viewer/viewer/viewer.cc",
+  "file": "/home/winfordt/ObjViewer_v2.0/obj_viewer/viewer/viewer.cc"
+},
+{
+  "directory": "/home/winfordt/ObjViewer_v2.0/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/home/winfordt/ObjViewer_v2.0/build -I/home/winfordt/ObjViewer_v2.0 -I/home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/include -I/home/winfordt/ObjViewer_v2.0/. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL  -Wall -Werror -Wextra -O3 -g -fPIC -std=gnu++17 -o CMakeFiles/ObjViewer_v2.dir/ObjViewer_v2_autogen/3YJK5W5UP7/qrc_resources.cpp.o -c /home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/3YJK5W5UP7/qrc_resources.cpp",
+  "file": "/home/winfordt/ObjViewer_v2.0/build/ObjViewer_v2_autogen/3YJK5W5UP7/qrc_resources.cpp"
+}
+]
