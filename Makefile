@@ -2,19 +2,18 @@ OS           := $(shell uname -s)
 
 NAME         := ObjViewer_v2
 
-APP          := $(if $(filter Linux,$(OS)),$(NAME),$(NAME).app)
-
-SRC_DIR      := src
 BUILD_DIR    := build
-LIB_DIR      := src/libobj
 DOCS_DIR     := docs
 DVI_DIR      := manual
 DVI_FILE     := manual.texi
 
-OPEN         := $(if $(filter Linux,$(OS)),xdg-open,open)
 ifeq ($(OS), Linux)
+APP          := $(NAME)
+OPEN         := xdg-open
 RUN          := ./$(BUILD_DIR)/$(APP)
 else
+APP          := $(NAME).app
+OPEN         := open
 RUN          := $(OPEN) $(BUILD_DIR)/$(APP)
 endif
 

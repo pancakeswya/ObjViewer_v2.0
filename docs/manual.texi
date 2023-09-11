@@ -1,100 +1,100 @@
 \input texinfo
 @setfilename manual
-@settitle 3DViewer_v1.0
+@settitle ObjViewer_v2.0
 @documentencoding UTF-8
 
 @copying
-Copyright © 2023 by winfordt-armorcoo-parasits
+Copyright © 2023 by pancakeswya
 @end copying
 
 @titlepage
-@title Небольшая инструкция по использованию 3DViewer
+@title A little instruction on using ObjViewer
 @vskip
 @insertcopying
-@author Нияз Хазигалеев, Дастан Османалиев, Ирина Макарова
+@author Niyaz Khazigaleev
 @end titlepage
 
 @ifnottex
 @node Top
-@top 3DViewer_v1.0
+@top ObjViewer_v2.0
 @insertcopying
 @end ifnottex
 
 @menu
-* General information:: В этом разделе представлена общая информация о принципе работы 3DViewer.
-* Affine transformations:: В этом разделе представлена информация о реализации Аффиных преорбразований.
-* Obj file:: В этом разделе представлена информация о списке реализованных математических функций.
-* info:: В этом разделе представлена информация о возможности построения графиков функций.
-* Part_1:: В этом разделе представлена информация о возможности использования кредитного калькулятора.
-* Part_2:: В этом разделе представлена информация о возможности использования депозитного калькулятора.
+* General information:: This section provides general information about how 3DViewer works.
+* Affine transformations:: This section provides information about the implementation of Affine transformations.
+* Obj file:: This section provides information about the list of implemented mathematical functions.
+* info:: This section provides information about the possibility of plotting functions.
+* Part_1:: This section provides information about the possibility of using a credit calculator.
+* Part_2:: This section provides information about the possibility of using a deposit calculator.
 @end menu
 
 @node General information
 @chapter General information
 
-Разработана программа для визуализации каркасных моделей в трехмерном пространстве на языке программирования C/C++ с использованием QT Creator версии 5.12.@*
+A program has been developed for visualizing wireframe models in three-dimensional space in the C/C++ programming language using QT Creator version 5.12.@*
 
 @node  Affine transformations
 @chapter  Affine transformations
 
-Аффинное преобразование - отображение плоскости или пространства в себя, при котором параллельные прямые переходят в параллельные прямые, пересекающиеся — в пересекающиеся, скрещивающиеся — в скрещивающиеся.@*
-Преобразование плоскости называется аффинным если оно взаимно однозначно и образом любой прямой является прямая. Преобразование (отображение) называется взаимно однозначным (биективным), если оно переводит разные точки в разные, и в каждую точку переходит какая-то точка.@*
-С алгебраической точки зрения аффинное преобразование это преобразование вида: f(x) = M * x + v, где M - некая обратимая матрица, а v - какое-то значение.@*
+Affine transformation is a mapping of a plane or space into itself, in which parallel lines turn into parallel lines, intersecting - into intersecting, crossing — into crossing.@*
+A transformation of a plane is called affine if it is mutually unambiguous and the image of any straight line is a straight line. A transformation (mapping) is called one-to-one (bijective) if it translates different points into different ones, and some point goes to each point.
+From an algebraic point of view, an affine transformation is a transformation of the form: f(x) = M * x + v, where M is some kind of invertible matrix, and v is some value.@*
 
-Свойства аффинных преобразований:
+Properties of affine transformations:
 @enumerate
 @item
-Композиция аффинных преобразований есть снова аффинное преобразование.
+The composition of affine transformations is again an affine transformation.
 @item
-Преобразование, обратное к аффинному, есть снова аффинное преобразование.
+The inverse of the affine transformation is again an affine transformation.
 @item
-Отношение площадей сохраняется.
+The area ratio is preserved.
 @item
-Отношение длин отрезков на прямой сохраняется.
+The ratio of the lengths of segments on a straight line is preserved.
 @end enumerate
 
-Перемещение@*
-где a и b - величины по x и y, на которые необходимо переместить исходную точку. Таким образом, чтобы переместить точку необходимо умножить матрицу перемещения на нее:
-где x и y - исходные координаты точки, а x1 и y1 - полученные координаты новой точки после перемещения.@*
+Moving@*
+where a and b are the x and y values by which the starting point should be moved. Thus, in order to move a point, it is necessary to multiply the displacement matrix by it:
+where x and y are the original coordinates of the point, and x1 and y1 are the obtained coordinates of the new point after moving.@*
 
-Поворот@*
-Матрица поворота по часовой стрелке в однородных двумерных координатах:
-где a - угол поворота в двумерном пространстве. Для получения координат новой точки необходимо также, как и матрицу перемещения, перемножить матрицу поворота на исходную точку:@*
+Turn@*
+Clockwise rotation matrix in homogeneous two-dimensional coordinates:
+where a is the angle of rotation in two-dimensional space. To obtain the coordinates of a new point, it is also necessary, as well as the displacement matrix, to multiply the rotation matrix by the original point:@*
 
-Масштабирование@*
-Матрица масштабирования в однородных двумерных координатах:
-где a и b - коэффициенты масштабирования соответственно по осям OX и OY. Получение координат новой точки происходит аналогично описанным выше случаям
+Scaling@*
+The scaling matrix in homogeneous two-dimensional coordinates:
+where a and b are the scaling coefficients, respectively, along the OX and OY axes. Obtaining the coordinates of a new point occurs similarly to the cases described above
 @node Obj file
 @chapter Obj file
 
-Файлы .obj - это формат файла описания геометрии, впервые разработанный компанией Wavefront Technologies. Формат файла открыт и принят многими поставщиками приложений для 3D-графики.@*
+Files.obj is a geometry description file format first developed by Wavefront Technologies. The file format is open and accepted by many 3D graphics application vendors.@*
 
-Формат файла .obj - это простой формат данных, который представляет только трехмерную геометрию, а именно положение каждой вершины, положение UV координат текстуры каждой вершины, нормали вершин и грани, которые определяют каждый многоугольник как список вершин и вершин текстуры. Координаты obj не имеют единиц измерения, но файлы obj могут содержать информацию о масштабе в удобочитаемой строке комментариев.
+File format .obj is a simple data format that represents only three-dimensional geometry, namely the position of each vertex, the position of the UV coordinates of the texture of each vertex, the normals of the vertices and the faces that define each polygon as a list of vertices and vertices of the texture. obj coordinates do not have units of measurement, but obj files can contain scale information in a human-readable comment line.
 
 @node info
 @chapter info
 
-При написании кода придерживались Google Style@*
-Обеспечено покрытие unit-тестами модулей, связанных с загрузкой моделей и аффинными преобразованиями.@*
-Программа предоставляет возможность.@*
-- Загружать каркасную модель из файла формата obj (поддержка только списка вершин и поверхностей).@*
-- Перемещать модель на заданное расстояние относительно осей X, Y, Z..@*
-- Поворачивать модель на заданный угол относительно своих осей X, Y, Z@*
-- Масштабировать модель на заданное значение.@*
-- Выводить информацию о загруженной модели - название файла, кол-во вершин и ребер
+When writing the code, we followed Google Style@*
+Unit-test coverage of modules related to model loading and affine transformations is provided.@*
+The program provides the ability to.@*
+- Load a wireframe model from an obj format file (support only for a list of vertices and surfaces).@*
+- Move the model by a given distance relative to the X, Y, Z axes..@*
+- Rotate the model by a given angle relative to its X, Y, Z axes.@*
+- Scale the model by the specified value.@*
+- Output information about the loaded model - file name, number of vertices and edges
 
 
 @node Part_1
 @chapter Part_1
-В этой части реализованы базовые настройки и просмотра модели@*
-- Программа позволяет настраивать тип проекции (параллельная и центральная)@*
-- Программа позволяет настраивать тип (сплошная, пунктирная), цвет и толщину ребер, способ отображения (отсутствует, круг, квадрат), цвет и размер вершин@*
-- Программа позволяет выбирать цвет фона@*
-- Настройки сохраняются между перезапусками программы@*
+In this part, basic settings and model views are implemented@*
+- The program allows you to configure the type of projection (parallel and central)@*
+- The program allows you to customize the type (solid, dotted), the color and thickness of the edges, the display method (missing, circle, square), the color and size of the vertices@*
+- The program allows you to choose the background color@*
+- Settings are saved between restarts of the program@*
 @node Part_2
 @chapter Part_2
-Программа имеет специальный режим записи изображения и gif-анимации и сохраняются в произвольный каталог@*
-- Программа позволяет сохранять полученные ("отрендеренные") изображения в файл во множествах форматах@*
-- Программа позволяеи по специальной кнопке записывать небольшие "скринкасты" - текущие пользовательские аффинные преобразования загруженного объекта в gif-анимацию (640x480, 10fps, 5s)@*
+The program has a special mode for recording images and gif animations and is saved to an arbitrary directory@*
+- The program allows you to save the received ("rendered") images to a file in many formats@*
+- The program allows you to record small "screencasts" using a special button - the current user affine transformations of the uploaded object into gif animation (640x480, 10fps, 5s)@*
 
 @bye
