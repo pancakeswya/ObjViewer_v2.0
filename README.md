@@ -15,7 +15,7 @@ Ui is based on Qt, graphics are implemented using OpenGL and shaders(GLSL)
 - Settings of last session are gonna be saved
 - Transformations(move, rotate, scale), gif is a bit laggy
 ![](misc/transform.gif)
-- Material properties + you can replace texture
+- Material properties. You can replace/unload texture + UV map export
 ![](misc/material.png)
 - Non triangular faces are triangulated using earcut algorithm, plus more optimization algorithm are implemented
 - A lot more small features, you should check it out
