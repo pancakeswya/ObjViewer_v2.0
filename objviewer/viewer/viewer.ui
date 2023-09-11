@@ -1787,7 +1787,7 @@ QDoubleSpinBox::up-button  {
   <customwidget>
    <class>Loader</class>
    <extends>QOpenGLWidget</extends>
-   <header>obj_viewer/viewer/loader.h</header>
+   <header>objviewer/viewer/loader.h</header>
   </customwidget>
  </customwidgets>
  <resources>

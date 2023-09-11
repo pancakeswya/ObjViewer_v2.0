@@ -1,12 +1,12 @@
-#ifndef OBJ_VIEWER_LIB_DATA_PARSER_DATA_PARSER_H_
-#define OBJ_VIEWER_LIB_DATA_PARSER_DATA_PARSER_H_
+#ifndef OBJVIEWER_LIB_DATA_PARSER_DATA_PARSER_H_
+#define OBJVIEWER_LIB_DATA_PARSER_DATA_PARSER_H_
 
 #include <limits>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "obj_viewer/types/data_types.h"
+#include "objviewer/types/data_types.h"
 
 namespace objv::DataParser {
 
@@ -41,4 +41,4 @@ std::pair<Data*, Status> Parse(std::string_view path);
 
 }  // namespace objv::DataParser
 
-#endif  // OBJ_VIEWER_LIB_DATA_PARSER_DATA_PARSER_H_
+#endif  // OBJVIEWER_LIB_DATA_PARSER_DATA_PARSER_H_

@@ -1,5 +1,5 @@
-#ifndef OBJ_VIEWER_VIEWER_VIEWER_H_
-#define OBJ_VIEWER_VIEWER_VIEWER_H_
+#ifndef OBJVIEWER_VIEWER_VIEWER_H_
+#define OBJVIEWER_VIEWER_VIEWER_H_
 
 #include <QMainWindow>
 #include <QSettings>
@@ -47,4 +47,4 @@ class Viewer : public QMainWindow {
 
 }  // namespace objv
 
-#endif  // OBJ_VIEWER_VIEWER_VIEWER_H_
+#endif  // OBJVIEWER_VIEWER_VIEWER_H_

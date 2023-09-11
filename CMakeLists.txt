@@ -30,12 +30,12 @@ add_library(Gif STATIC
     external/gif.c)
 
 add_library(DataParser STATIC
-    obj_viewer/lib/data_parser/data_parser.h
-    obj_viewer/lib/data_parser/data_parser.cc)
+    objviewer/lib/data_parser/data_parser.h
+    objviewer/lib/data_parser/data_parser.cc)
 
 add_library(MeshMaker STATIC
-    obj_viewer/lib/mesh_maker/mesh_maker.h
-    obj_viewer/lib/mesh_maker/mesh_maker.cc)
+    objviewer/lib/mesh_maker/mesh_maker.h
+    objviewer/lib/mesh_maker/mesh_maker.cc)
 
 target_link_libraries(MeshMaker DataParser)
 
@@ -44,20 +44,20 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 add_library(ObjLoader STATIC
-    obj_viewer/viewer/loader.cc
-    obj_viewer/viewer/loader.h)
+    objviewer/viewer/loader.cc
+    objviewer/viewer/loader.h)
 
 target_link_libraries(ObjLoader Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} MeshMaker)
 
 set (QRC_FILES resources/resources.qrc)
 
 set(PROJECT_SOURCES
-    obj_viewer/main.cc
-    obj_viewer/util/gif_maker.cc
-    obj_viewer/util/gif_maker.h
-    obj_viewer/viewer/viewer.cc
-    obj_viewer/viewer/viewer.h
-    obj_viewer/viewer/viewer.ui
+    objviewer/main.cc
+    objviewer/util/gif_maker.cc
+    objviewer/util/gif_maker.h
+    objviewer/viewer/viewer.cc
+    objviewer/viewer/viewer.h
+    objviewer/viewer/viewer.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

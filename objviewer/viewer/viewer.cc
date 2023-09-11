@@ -7,7 +7,7 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 
-#include "obj_viewer/util/gif_maker.h"
+#include "objviewer/util/gif_maker.h"
 
 namespace objv {
 

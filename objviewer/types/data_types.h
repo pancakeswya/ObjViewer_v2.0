@@ -1,5 +1,5 @@
-#ifndef OBJ_VIEWER_TYPES_DATA_TYPES_H_
-#define OBJ_VIEWER_TYPES_DATA_TYPES_H_
+#ifndef OBJVIEWER_TYPES_DATA_TYPES_H_
+#define OBJVIEWER_TYPES_DATA_TYPES_H_
 
 #include <string>
 #include <vector>
@@ -57,4 +57,4 @@ inline NewMtl::NewMtl() : Ns(32.0f), d(1.0f), Kd{0.7f, 0.7f, 0.7f} {}
 
 }  // namespace objv
 
-#endif  // OBJ_VIEWER_TYPES_DATA_TYPES_H_
+#endif  // OBJVIEWER_TYPES_DATA_TYPES_H_

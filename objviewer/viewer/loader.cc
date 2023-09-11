@@ -398,12 +398,12 @@ void Loader::resizeGL(int width, int height) {
 }
 
 void Loader::paintGL() {
-  if (!mesh_) {
-    return;
-  }
   glClearColor(sett_.color_bg.redF(), sett_.color_bg.greenF(),
                sett_.color_bg.blueF(), sett_.color_bg.alphaF());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  if (!mesh_) {
+    return;
+  }
   glLineWidth(sett_.edge_size);
 
   program_->bind();

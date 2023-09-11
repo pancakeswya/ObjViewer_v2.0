@@ -4,11 +4,11 @@ Ui is based on Qt, graphics are implemented using OpenGL and shaders(GLSL)
 ## Features
 - Full obj/mtl file support
 - View type(wireframe, Solid and Material)
-![](misc/view_type.gif)
+![](misc/viewtype.gif)
 - Screenshot and GIF record
 - Information about model(vertex amount, facet amout and etc)
 - Projection(parallel and central)
-![](misc/proj_type.gif)
+![](misc/projtype.gif)
 - Shading(smooth and flat)
 ![](misc/shading.gif)
 - Edge and vertex settings for wireframe view type

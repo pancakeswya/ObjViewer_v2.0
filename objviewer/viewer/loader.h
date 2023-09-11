@@ -1,5 +1,5 @@
-#ifndef OBJ_VIEWER_VIEWER_LOADER_LOADER_H_
-#define OBJ_VIEWER_VIEWER_LOADER_LOADER_H_
+#ifndef OBJVIEWER_VIEWER_LOADER_LOADER_H_
+#define OBJVIEWER_VIEWER_LOADER_LOADER_H_
 
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
@@ -8,7 +8,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 
-#include "obj_viewer/lib/mesh_maker/mesh_maker.h"
+#include "objviewer/lib/mesh_maker/mesh_maker.h"
 
 namespace objv {
 
@@ -114,4 +114,4 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
 
 }  // namespace objv
 
-#endif  // OBJ_VIEWER_VIEWER_LOADER_LOADER_H_
+#endif  // OBJVIEWER_VIEWER_LOADER_LOADER_H_
