@@ -29,7 +29,7 @@ MAKEFLAGS    += --no-print-directory
 all: install run
 
 install:
-	mkdir $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)
 	cd $(BUILD_DIR) && $(BUILDER) .. && $(MAKE)
 
 uninstall:

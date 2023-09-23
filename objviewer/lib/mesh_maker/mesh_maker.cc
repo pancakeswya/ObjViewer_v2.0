@@ -1,11 +1,12 @@
 #include "mesh_maker.h"
 
 #include <cstring>
-#include <future>
-#include <iostream>
 #include <map>
 #include <set>
 #include <thread>
+#include <memory>
+#include <mutex>
+#include <condition_variable>
 
 namespace objv::MeshMaker {
 
@@ -25,14 +26,13 @@ struct compare {
 
 using IndexMap = std::map<DataParser::Index, unsigned int, compare>;
 
-using Edge = std::pair<unsigned int, unsigned int>;
-
-std::vector<unsigned int> GetUniqueEdges(
-    const std::vector<unsigned int>& edges) {
-  std::vector<unsigned int> unique_edges;
-  std::set<Edge> edges_set;
+void SetUniqueEdges(
+    const std::vector<unsigned int>& edges, std::vector<unsigned int>& unique_edges,
+    std::mutex& m, std::condition_variable& cv, volatile bool& state) {
+  std::unique_lock<std::mutex> lock(m);
+  std::set<std::pair<unsigned int, unsigned int>> edges_set;
   for (size_t i = 0; i < edges.size(); i += 2) {
-    Edge edge;
+    std::pair<unsigned int, unsigned int> edge;
     if (edges[i] > edges[i + 1]) {
       edge = {edges[i], edges[i + 1]};
     } else {
@@ -45,7 +45,8 @@ std::vector<unsigned int> GetUniqueEdges(
     unique_edges.emplace_back(start);
     unique_edges.emplace_back(finish);
   }
-  return unique_edges;
+  state = true;
+  cv.notify_one();
 }
 
 void DataToMesh(DataParser::Data* data, Mesh* mesh) {
@@ -61,8 +62,13 @@ void DataToMesh(DataParser::Data* data, Mesh* mesh) {
   std::move(data->max, data->max + 3, mesh->max_vertex);
   std::move(data->min, data->min + 3, mesh->min_vertex);
 
-  auto future = std::async(std::launch::async, &GetUniqueEdges, data->edges);
-  mesh->edges = future.get();
+  std::mutex m;
+  std::condition_variable cv;
+  volatile bool state{};
+  std::unique_lock<std::mutex> lock(m);
+  std::thread edge_thread(&SetUniqueEdges,data->edges, std::ref(mesh->edges), std::ref(m), std::ref(cv), std::ref(state));
+
+  edge_thread.detach();
 
   // if mesh not made up by lines
   if (data->indices.size() != 2 * mesh->facet_count) {
@@ -107,6 +113,10 @@ void DataToMesh(DataParser::Data* data, Mesh* mesh) {
   mesh->tex_coords = std::move(data->vt);
   mesh->uv = std::move(data->uv);
   mesh->points = std::move(data->v);
+
+  while(!state) {
+    cv.wait(lock);
+  }
 }
 
 }  // namespace
@@ -118,7 +128,7 @@ std::pair<Mesh*, Status> FromFile(std::string_view path) {
     DataToMesh(data, mesh);
   }
   delete data;
-  return std::pair(mesh, stat);
+  return {mesh, stat};
 }
 
 }  // namespace objv::MeshMaker
