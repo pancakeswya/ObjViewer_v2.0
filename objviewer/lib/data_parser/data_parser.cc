@@ -578,7 +578,7 @@ std::pair<Data*, Status> Parse(std::string_view path) {
     Flush(data);
   }
 
-  return std::pair(data, stat);
+  return {data, stat};
 }
 
 }  // namespace objv::DataParser
