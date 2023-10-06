@@ -3,18 +3,15 @@
 #include <cstring>
 #include <map>
 #include <set>
-#include <thread>
-#include <memory>
-#include <mutex>
-#include <condition_variable>
+#include <future>
 
 namespace objv::MeshMaker {
 
 namespace {
 
 struct compare {
-  bool operator()(const DataParser::Index& lhs,
-                  const DataParser::Index& rhs) const noexcept {
+  bool operator()(const Index& lhs,
+                  const Index& rhs) const noexcept {
     if (lhs.fv < rhs.fv) return true;
     if (rhs.fv < lhs.fv) return false;
     if (lhs.fn < rhs.fn) return true;
@@ -24,12 +21,10 @@ struct compare {
   }
 };
 
-using IndexMap = std::map<DataParser::Index, unsigned int, compare>;
+using IndexMap = std::map<Index, unsigned int, compare>;
 
-void SetUniqueEdges(
-    const std::vector<unsigned int>& edges, std::vector<unsigned int>& unique_edges,
-    std::mutex& m, std::condition_variable& cv, volatile bool& state) {
-  std::unique_lock<std::mutex> lock(m);
+std::vector<unsigned int> SetUniqueEdges(const std::vector<unsigned int>& edges) {
+  std::vector<unsigned int> unique_edges;
   std::set<std::pair<unsigned int, unsigned int>> edges_set;
   for (size_t i = 0; i < edges.size(); i += 2) {
     std::pair<unsigned int, unsigned int> edge;
@@ -45,11 +40,10 @@ void SetUniqueEdges(
     unique_edges.emplace_back(start);
     unique_edges.emplace_back(finish);
   }
-  state = true;
-  cv.notify_one();
+  return unique_edges;
 }
 
-void DataToMesh(DataParser::Data* data, Mesh* mesh) {
+void DataToMesh(Data* data, Mesh* mesh) {
   IndexMap index_map;
 
   mesh->has_textures = !data->vt.empty();
@@ -57,18 +51,12 @@ void DataToMesh(DataParser::Data* data, Mesh* mesh) {
 
   mesh->facet_count = data->facet_count;
   mesh->vertex_count = data->vertex_count;
-  mesh->material_count = data->mtl.size();
 
   std::move(data->max, data->max + 3, mesh->max_vertex);
   std::move(data->min, data->min + 3, mesh->min_vertex);
 
-  std::mutex m;
-  std::condition_variable cv;
-  volatile bool state{};
-  std::unique_lock<std::mutex> lock(m);
-  std::thread edge_thread(&SetUniqueEdges,data->edges, std::ref(mesh->edges), std::ref(m), std::ref(cv), std::ref(state));
-
-  edge_thread.detach();
+  auto future = std::async(std::launch::async, &SetUniqueEdges, data->edges);
+  mesh->edges = future.get();
 
   // if mesh not made up by lines
   if (data->indices.size() != 2 * mesh->facet_count) {
@@ -103,27 +91,16 @@ void DataToMesh(DataParser::Data* data, Mesh* mesh) {
       mesh->indices.push_back(combined_idx);
     }
   }
-  if (mesh->has_normals && mesh->has_textures) {
-    mesh->stride = 8 * sizeof(float);
-  } else if (!mesh->has_normals) {
-    mesh->stride = 5 * sizeof(float);
-  } else if (mesh->has_normals) {
-    mesh->stride = 6 * sizeof(float);
-  }
   mesh->tex_coords = std::move(data->vt);
   mesh->uv = std::move(data->uv);
   mesh->points = std::move(data->v);
-
-  while(!state) {
-    cv.wait(lock);
-  }
 }
 
 }  // namespace
 
-std::pair<Mesh*, Status> FromFile(std::string_view path) {
+std::pair<Mesh*, Status> MakeFromFile(std::string_view path) {
   auto mesh = new Mesh;
-  auto [data, stat] = DataParser::Parse(path);
+  auto [data, stat] = DataParser::ParseFromFile(path);
   if (stat == Status::kNoExc) {
     DataToMesh(data, mesh);
   }

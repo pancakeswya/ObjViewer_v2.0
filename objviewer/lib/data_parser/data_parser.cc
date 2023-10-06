@@ -38,14 +38,14 @@ const char* SkipLine(const char* ptr) noexcept {
   return ++ptr;
 }
 
-unsigned long int FileSize(std::ifstream& file) {
+long int FileSize(std::ifstream& file) {
   long int p, n;
   p = file.tellg();
   file.seekg(0, std::ifstream::end);
   n = file.tellg();
   file.seekg(p, std::ifstream::beg);
   if (n > 0) {
-    return static_cast<unsigned int>(n);
+    return n;
   } else {
     return 0;
   }
@@ -157,7 +157,7 @@ void ProcessPolygon(Data& data, const std::vector<Index>& raw_ind,
     }
     // triangulate polygon with earcut method
   } else if (npolys > 4) {
-    Index i0, i0_2;
+    Index i0{}, i0_2{};
     // Find the normal axis of the polygon using Newell's method
     Point3D n1{};
     for (size_t k = 0; k < npolys; ++k) {
@@ -348,7 +348,7 @@ const char* ParseMtl(const char* p, Data& data) {
     NewMtl new_mtl;
     bool found_d = false;
 
-    unsigned long int bytes = FileSize(mtl_file);
+    long int bytes = FileSize(mtl_file);
     char* buf = new char[bytes + 1];
     unsigned int read = mtl_file.readsome(buf, bytes);
     buf[read] = '\0';
@@ -566,7 +566,7 @@ inline void Flush(Data* data) {
 
 }  // namespace
 
-std::pair<Data*, Status> Parse(std::string_view path) {
+std::pair<Data*, Status> ParseFromFile(std::string_view path) {
   stat = Status::kNoExc;
   auto data = new Data;
 

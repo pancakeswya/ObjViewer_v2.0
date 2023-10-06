@@ -57,8 +57,6 @@ Loader::Loader(QWidget* parent)
             .color_bg{Qt::black}} {}
 
 Loader::~Loader() {
-  delete mesh_;
-  delete[] maps_;
   ProgramDestroy();
 }
 
@@ -67,11 +65,9 @@ void Loader::UpdateFrame() {
 }
 
 Status Loader::Open(const QString& path) {
-  delete mesh_;
-  delete[] maps_;
   ProgramDestroy();
-  auto [mesh, stat] = MeshMaker::FromFile(path.toStdString());
-  mesh_ = mesh;
+  auto [mesh, stat] = MeshMaker::MakeFromFile(path.toStdString());
+  mesh_.reset(mesh);
   if (stat == Status::kNoExc) {
     ProgramCreate();
     SetTextures();
@@ -113,7 +109,7 @@ void Loader::Move(double dist, int axis) {
   update();
 }
 
-ShaderPaths Loader::GetShadersPaths() {
+Loader::ShaderPaths Loader::GetShadersPaths() {
   const char* v_path;
   const char* f_path;
   if (sett_.model_view_type == ViewType::kMaterial && mesh_->has_textures) {
@@ -193,6 +189,7 @@ void Loader::ProgramCreate() {
   ebo_.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
   program_->enableAttributeArray("a_position");
+  size_t stride = (3 + 3 * mesh_->has_normals + 2 * mesh_->has_textures) * sizeof(float);
   if (sett_.model_view_type != ViewType::kWireframe &&
       (mesh_->has_normals || mesh_->has_textures)) {
     vbo_.allocate(mesh_->vertices.data(),
@@ -200,16 +197,16 @@ void Loader::ProgramCreate() {
     ebo_.allocate(mesh_->indices.data(),
                   mesh_->indices.size() * sizeof(unsigned int));
 
-    program_->setAttributeBuffer("a_position", GL_FLOAT, 0, 3, mesh_->stride);
+    program_->setAttributeBuffer("a_position", GL_FLOAT, 0, 3, stride);
     if (mesh_->has_textures) {
       program_->enableAttributeArray("a_tex_coords");
       program_->setAttributeBuffer("a_tex_coords", GL_FLOAT, 3 * sizeof(float),
-                                   2, mesh_->stride);
+                                   2, stride);
     }
     if (mesh_->has_normals) {
       program_->enableAttributeArray("a_normal");
       program_->setAttributeBuffer("a_normal", GL_FLOAT, 5 * sizeof(float), 3,
-                                   mesh_->stride);
+                                   stride);
     }
   } else {
     program_->setAttributeBuffer("a_position", GL_FLOAT, 0, 3);
@@ -239,7 +236,7 @@ unsigned int Loader::GetFacetCount() noexcept { return mesh_->facet_count; }
 
 unsigned int Loader::GetEdgeCount() noexcept { return mesh_->edges.size() / 2; }
 
-const MaterialData& Loader::GetMaterialData() noexcept { return mesh_->mtl; }
+const std::vector<NewMtl>& Loader::GetMaterialData() noexcept { return mesh_->mtl; }
 
 QColor Loader::GetEdgeColor() noexcept {
   return QColor::fromRgbF(sett_.color_line.x(), sett_.color_line.y(),
@@ -259,7 +256,7 @@ const QImage& Loader::GetFrame() {
 }
 
 void Loader::SetTextures() {
-  maps_ = new Maps[mesh_->mtl.size()]();
+  maps_ = std::make_unique<Maps[]>(mesh_->mtl.size());
   for (size_t i = 0; i < mesh_->mtl.size(); ++i) {
     LoadTexture(maps_[i].ambient, mesh_->mtl[i].map_ka);
     LoadTexture(maps_[i].diffuse, mesh_->mtl[i].map_kd);

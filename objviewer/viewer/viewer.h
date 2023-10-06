@@ -26,7 +26,7 @@ class Viewer : public QMainWindow {
   static void SetTheme();
   void SaveSettings();
   void LoadSettings();
-  void LoadMaterial(const MaterialData&);
+  void LoadMaterial(const std::vector<NewMtl>&);
  private slots:
   void OnDoubleSpinBoxStepScaleValueChanged(double);
   void OnDoubleSpinBoxStepMoveValueChanged(double);

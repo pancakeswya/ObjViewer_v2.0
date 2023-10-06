@@ -166,7 +166,7 @@ void ClearLayout(QLayout* layout) {
 
 }  // namespace
 
-void Viewer::LoadMaterial(const MaterialData& mtl) {
+void Viewer::LoadMaterial(const std::vector<NewMtl>& mtl) {
   auto& layout = ui_->grid_layout_material;
   ClearLayout(layout);
   ui_->scroll_area_maps->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);

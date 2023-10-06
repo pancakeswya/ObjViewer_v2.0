@@ -8,6 +8,12 @@ namespace objv {
 
 enum class Status : short int { kNoExc, kInvalidFile, kNoFile };
 
+struct Index {
+  unsigned int fv;
+  unsigned int fn;
+  unsigned int ft;
+};
+
 struct NewMtl {
   std::string name;
   std::string map_ka;
@@ -29,14 +35,33 @@ struct UseMtl {
   unsigned int offset_uv;
 };
 
+struct Data {
+  unsigned int facet_count{};
+  unsigned int vertex_count{};
+
+  std::string dir_path;
+
+  float max[3];
+  float min[3];
+
+  std::vector<unsigned int> edges;
+  std::vector<unsigned int> uv;
+
+  std::vector<float> vn;
+  std::vector<float> vt;
+  std::vector<float> v;
+
+  std::vector<Index> indices;
+  std::vector<UseMtl> usemtl;
+  std::vector<NewMtl> mtl;
+};
+
 struct Mesh {
   bool has_textures{};
   bool has_normals{};
 
   unsigned int facet_count{};
   unsigned int vertex_count{};
-  unsigned int material_count{};
-  unsigned int stride{};
 
   float max_vertex[3]{};
   float min_vertex[3]{};

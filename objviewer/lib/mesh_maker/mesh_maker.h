@@ -5,7 +5,7 @@
 
 namespace objv::MeshMaker {
 
-std::pair<Mesh*, Status> FromFile(std::string_view path);
+std::pair<Mesh*, Status> MakeFromFile(std::string_view path);
 
 }  // namespace objv::MeshMaker
 

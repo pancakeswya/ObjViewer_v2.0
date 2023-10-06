@@ -1,0 +1,9 @@
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/Gif.dir
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/DataParser.dir
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/MeshMaker.dir
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/ObjLoader.dir
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/ObjViewer_v2.dir
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/edit_cache.dir
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/ObjLoader_autogen.dir
+/mnt/c/Users/niyaz/CLionProjects/ObjViewer_v2.0/cmake-build-release/CMakeFiles/ObjViewer_v2_autogen.dir
