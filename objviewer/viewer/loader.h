@@ -4,11 +4,11 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLTexture>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 
 #include <array>
+#include <unordered_map>
 #include <memory>
 
 #include "objviewer/lib/mesh_maker/mesh_maker.h"
@@ -25,20 +25,7 @@ enum class EdgeType : bool { kSolid, kDashed };
 
 enum class VertexType : short int { kNone, kQuad, kCircle };
 
-struct Maps {
-  QOpenGLTexture ambient;
-  QOpenGLTexture diffuse;
-  QOpenGLTexture specular;
-  Maps();
-  ~Maps() = default;
-};
-
-inline Maps::Maps()
-    : ambient(QOpenGLTexture::Target2D),
-      diffuse(QOpenGLTexture::Target2D),
-      specular(QOpenGLTexture::Target2D) {}
-
-class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
+class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   Q_OBJECT
  public:
   explicit Loader(QWidget* parent = nullptr);
@@ -60,6 +47,7 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   const QImage& GetFrame();
   void Rotate(int, int);
   void Move(double, int);
+
  public slots:
   void Scale(double);
   void SetEdgeSize(int);
@@ -71,17 +59,28 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
   void SetShadingType(int);
   void UpdateFrame();
 
- protected:
-  using ShaderPaths = std::pair<const char*, const char*>;
+ private:
+  struct Maps;
+
+  using ShaderPaths = std::pair<std::string_view, std::string_view>;
+  using TextureShaderPaths = std::unordered_map<bool, std::unordered_map<ShadingType, ShaderPaths>>;
+  using SolidShaderPaths = std::unordered_map<ShadingType,ShaderPaths>;
+  using WireframeShaderPaths = std::unordered_map<EdgeType, ShaderPaths>;
+
+  inline static TextureShaderPaths map_texture_;
+  inline static SolidShaderPaths map_solid_;
+  inline static WireframeShaderPaths map_wireframe_;
+
+  static void InitializeShaderPaths();
+  ShaderPaths GetShaderPaths();
 
   void initializeGL() override;
   void resizeGL(int, int) override;
   void paintGL() override;
-  ShaderPaths GetShadersPaths();
+
   void ProgramCreate();
   void ProgramDestroy();
 
- private:
   std::unique_ptr<Maps[]> maps_{};
   std::unique_ptr<Mesh> mesh_{};
   QOpenGLBuffer vbo_;
@@ -107,7 +106,7 @@ class Loader : public QOpenGLWidget, protected QOpenGLFunctions {
     QVector3D color_line;
     QVector3D color_point;
     QColor color_bg;
-  } sett_;
+  } settings_;
   QImage frame_;
 };
 

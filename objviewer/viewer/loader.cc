@@ -2,7 +2,9 @@
 
 #include <QDir>
 #include <QFileDialog>
+#include <QOpenGLTexture>
 #include <QPainter>
+
 #include <cmath>
 
 namespace objv {
@@ -45,11 +47,24 @@ void LoadTexture(QOpenGLTexture& texture, std::string_view path) {
 
 }  // namespace
 
+struct Loader::Maps {
+  QOpenGLTexture ambient;
+  QOpenGLTexture diffuse;
+  QOpenGLTexture specular;
+  Maps();
+  ~Maps() = default;
+};
+
+inline Loader::Maps::Maps()
+    : ambient(QOpenGLTexture::Target2D),
+      diffuse(QOpenGLTexture::Target2D),
+      specular(QOpenGLTexture::Target2D) {}
+
 Loader::Loader(QWidget* parent)
     : QOpenGLWidget(parent),
       vbo_(QOpenGLBuffer::VertexBuffer),
       ebo_(QOpenGLBuffer::IndexBuffer),
-      sett_{.proj_type = ProjType::kParallel,
+      settings_{.proj_type = ProjType::kParallel,
             .vertex_size = 1.0f,
             .edge_size = 1.0f,
             .color_line{0.7f, 0.7f, 0.7f},
@@ -109,39 +124,24 @@ void Loader::Move(double dist, int axis) {
   update();
 }
 
-Loader::ShaderPaths Loader::GetShadersPaths() {
-  const char* v_path;
-  const char* f_path;
-  if (sett_.model_view_type == ViewType::kMaterial && mesh_->has_textures) {
-    if (mesh_->has_normals) {
-      v_path = ":/shaders/texture.vert";
-      if (sett_.shading_type == ShadingType::kSmooth) {
-        f_path = ":/shaders/texture.frag";
-      } else {
-        f_path = ":/shaders/texture_flat.frag";
-      }
-    } else {
-      v_path = ":/shaders/texture_no_normals.vert";
-      f_path = ":/shaders/texture_no_normals.frag";
-    }
-  } else if (sett_.model_view_type != ViewType::kWireframe &&
-             mesh_->has_normals) {
-    v_path = ":/shaders/solid.vert";
-    if (sett_.shading_type == ShadingType::kSmooth) {
-      f_path = ":/shaders/solid.frag";
-    } else {
-      f_path = ":/shaders/solid_flat.frag";
-    }
-  } else {
-    if (sett_.edge_type == EdgeType::kSolid) {
-      v_path = ":/shaders/wireframe.vert";
-      f_path = ":/shaders/wireframe.frag";
-    } else {
-      v_path = ":/shaders/wireframe_dashed.vert";
-      f_path = ":/shaders/wireframe_dashed.frag";
-    }
+void Loader::InitializeShaderPaths() {
+  map_texture_[true][ShadingType::kSmooth] = {":/shaders/texture.vert", ":/shaders/texture.frag"};
+  map_texture_[true][ShadingType::kFlat] = {":/shaders/texture.vert", ":/shaders/texture_flat.frag"};
+  map_texture_[false][ShadingType::kSmooth] = {":/shaders/texture_no_normals.vert", ":/shaders/texture_no_normals.frag"};
+  map_texture_[false][ShadingType::kFlat] = {":/shaders/texture_no_normals.vert", ":/shaders/texture_no_normals.frag"};
+  map_solid_[ShadingType::kSmooth] = {":/shaders/solid.vert", ":/shaders/solid.frag"};
+  map_solid_[ShadingType::kFlat] = {":/shaders/solid.vert", ":/shaders/solid_flat.frag"};
+  map_wireframe_[EdgeType::kSolid] = {":/shaders/wireframe.vert", ":/shaders/wireframe.frag"};
+  map_wireframe_[EdgeType::kDashed] = {":/shaders/wireframe_dashed.vert", ":/shaders/wireframe_dashed.frag"};
+}
+
+Loader::ShaderPaths Loader::GetShaderPaths() {
+  if (settings_.model_view_type == ViewType::kMaterial && mesh_->has_textures) {
+    return map_texture_[mesh_->has_normals][settings_.shading_type];
+  } else if (settings_.model_view_type != ViewType::kWireframe && mesh_->has_normals) {
+    return map_solid_[settings_.shading_type];
   }
-  return {v_path, f_path};
+  return map_wireframe_[settings_.edge_type];
 }
 
 void Loader::ProgramCreate() {
@@ -151,10 +151,10 @@ void Loader::ProgramCreate() {
     return;
   }
 
-  auto [v_path, f_path] = GetShadersPaths();
+  auto [v_path, f_path] = GetShaderPaths();
 
-  program_->addShaderFromSourceFile(QOpenGLShader::Vertex, v_path);
-  program_->addShaderFromSourceFile(QOpenGLShader::Fragment, f_path);
+  program_->addShaderFromSourceFile(QOpenGLShader::Vertex, v_path.data());
+  program_->addShaderFromSourceFile(QOpenGLShader::Fragment, f_path.data());
 
   if (!program_->link()) {
     close();
@@ -190,7 +190,7 @@ void Loader::ProgramCreate() {
 
   program_->enableAttributeArray("a_position");
   size_t stride = (3 + 3 * mesh_->has_normals + 2 * mesh_->has_textures) * sizeof(float);
-  if (sett_.model_view_type != ViewType::kWireframe &&
+  if (settings_.model_view_type != ViewType::kWireframe &&
       (mesh_->has_normals || mesh_->has_textures)) {
     vbo_.allocate(mesh_->vertices.data(),
                   mesh_->vertices.size() * sizeof(float));
@@ -221,12 +221,12 @@ void Loader::ProgramCreate() {
 }
 
 void Loader::SetEdgeSize(int size) {
-  sett_.edge_size = size;
+  settings_.edge_size = size;
   update();
 }
 
 void Loader::SetVertexSize(int size) {
-  sett_.vertex_size = size;
+  settings_.vertex_size = size;
   update();
 }
 
@@ -239,16 +239,16 @@ unsigned int Loader::GetEdgeCount() noexcept { return mesh_->edges.size() / 2; }
 const std::vector<NewMtl>& Loader::GetMaterialData() noexcept { return mesh_->mtl; }
 
 QColor Loader::GetEdgeColor() noexcept {
-  return QColor::fromRgbF(sett_.color_line.x(), sett_.color_line.y(),
-                          sett_.color_line.z());
+  return QColor::fromRgbF(settings_.color_line.x(), settings_.color_line.y(),
+                          settings_.color_line.z());
 }
 
 QColor Loader::GetVertexColor() noexcept {
-  return QColor::fromRgbF(sett_.color_point.x(), sett_.color_point.y(),
-                          sett_.color_point.z());
+  return QColor::fromRgbF(settings_.color_point.x(), settings_.color_point.y(),
+                          settings_.color_point.z());
 }
 
-QColor Loader::GetBgColor() noexcept { return sett_.color_bg; }
+QColor Loader::GetBgColor() noexcept { return settings_.color_bg; }
 
 const QImage& Loader::GetFrame() {
   UpdateFrame();
@@ -304,24 +304,24 @@ void Loader::SaveUvMap(unsigned int index_mtl, std::string_view path_texture,
 }
 
 void Loader::SetEdgeColor(const QColor& color_line) {
-  sett_.color_line =
+  settings_.color_line =
       QVector3D(color_line.redF(), color_line.greenF(), color_line.blueF());
   update();
 }
 
 void Loader::SetVertexColor(const QColor& color_point) {
-  sett_.color_point =
+  settings_.color_point =
       QVector3D(color_point.redF(), color_point.greenF(), color_point.blueF());
   update();
 }
 
 void Loader::SetBgColor(const QColor& color_bg) {
-  sett_.color_bg = color_bg;
+  settings_.color_bg = color_bg;
   update();
 }
 
 void Loader::SetViewType(int view_type) {
-  sett_.model_view_type = ViewType(view_type);
+  settings_.model_view_type = ViewType(view_type);
   ProgramDestroy();
   ProgramCreate();
   resizeGL(width(), height());
@@ -329,13 +329,13 @@ void Loader::SetViewType(int view_type) {
 }
 
 void Loader::SetProjectionType(int proj_type) {
-  sett_.proj_type = ProjType(proj_type);
+  settings_.proj_type = ProjType(proj_type);
   resizeGL(width(), height());
   update();
 }
 
 void Loader::SetShadingType(int shading_type) {
-  sett_.shading_type = ShadingType(shading_type);
+  settings_.shading_type = ShadingType(shading_type);
   ProgramDestroy();
   ProgramCreate();
   resizeGL(width(), height());
@@ -343,18 +343,19 @@ void Loader::SetShadingType(int shading_type) {
 }
 
 void Loader::SetEdgeType(int type) {
-  sett_.edge_type = EdgeType(type);
+  settings_.edge_type = EdgeType(type);
   ProgramDestroy();
   ProgramCreate();
   resizeGL(width(), height());
   update();
 }
 void Loader::SetVertexType(int type) {
-  sett_.vertex_type = VertexType(type);
+  settings_.vertex_type = VertexType(type);
   update();
 }
 
 void Loader::initializeGL() {
+  InitializeShaderPaths();
   initializeOpenGLFunctions();
   glEnable(GL_PROGRAM_POINT_SIZE);
   glEnable(GL_DEPTH_TEST);
@@ -378,7 +379,7 @@ void Loader::resizeGL(int width, int height) {
   GLfloat max_size = std::max(std::max(size_x, size_y), size_z);
   GLfloat aspectratio = GLfloat(width) / GLfloat(height);
   QVector3D center(mid_size_x, mid_size_y, mid_size_z);
-  if (sett_.proj_type == ProjType::kCentral) {
+  if (settings_.proj_type == ProjType::kCentral) {
     v_mat_.lookAt(QVector3D(center.x(), center.y(), center.z() + max_size),
                   center, QVector3D(0.0f, 1.0f, 0.0f));
     p_mat_.perspective(100.0f, aspectratio, 0.01f * max_size,
@@ -395,13 +396,13 @@ void Loader::resizeGL(int width, int height) {
 }
 
 void Loader::paintGL() {
-  glClearColor(sett_.color_bg.redF(), sett_.color_bg.greenF(),
-               sett_.color_bg.blueF(), sett_.color_bg.alphaF());
+  glClearColor(settings_.color_bg.redF(), settings_.color_bg.greenF(),
+               settings_.color_bg.blueF(), settings_.color_bg.alphaF());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   if (!mesh_) {
     return;
   }
-  glLineWidth(sett_.edge_size);
+  glLineWidth(settings_.edge_size);
 
   program_->bind();
   vao_.bind();
@@ -411,10 +412,10 @@ void Loader::paintGL() {
   glUniformMatrix4fv(locations_[kMatNormalU], 1, GL_FALSE,
                      vm.inverted().transposed().constData());
 
-  program_->setUniformValue(locations_[kColorU], sett_.color_line);
-  program_->setUniformValue(locations_[kVertexSizeU], sett_.vertex_size);
+  program_->setUniformValue(locations_[kColorU], settings_.color_line);
+  program_->setUniformValue(locations_[kVertexSizeU], settings_.vertex_size);
 
-  if (sett_.model_view_type != ViewType::kWireframe &&
+  if (settings_.model_view_type != ViewType::kWireframe &&
       (mesh_->has_normals || mesh_->has_textures)) {
     size_t prev_offset = 0;
     for (auto& usemtl : mesh_->usemtl) {
@@ -430,7 +431,7 @@ void Loader::paintGL() {
                                 mesh_->mtl[usemtl.index].Ns);
       program_->setUniformValue(locations_[kOpacityU],
                                 mesh_->mtl[usemtl.index].d);
-      if (sett_.model_view_type == ViewType::kMaterial) {
+      if (settings_.model_view_type == ViewType::kMaterial) {
         maps_[usemtl.index].ambient.bind(0);
         maps_[usemtl.index].diffuse.bind(1);
         maps_[usemtl.index].specular.bind(2);
@@ -439,7 +440,7 @@ void Loader::paintGL() {
                      GL_UNSIGNED_INT, (void*)(prev_offset * sizeof(GLuint)));
 
       prev_offset = usemtl.offset_fv;
-      if (sett_.model_view_type == ViewType::kMaterial) {
+      if (settings_.model_view_type == ViewType::kMaterial) {
         maps_[usemtl.index].ambient.release(0);
         maps_[usemtl.index].diffuse.release(1);
         maps_[usemtl.index].specular.release(2);
@@ -447,13 +448,13 @@ void Loader::paintGL() {
     }
   } else {
     glDrawElements(GL_LINES, mesh_->edges.size(), GL_UNSIGNED_INT, nullptr);
-    if (sett_.vertex_type != VertexType::kNone) {
-      program_->setUniformValue(locations_[kColorU], sett_.color_point);
-      if (sett_.vertex_type == VertexType::kCircle) {
+    if (settings_.vertex_type != VertexType::kNone) {
+      program_->setUniformValue(locations_[kColorU], settings_.color_point);
+      if (settings_.vertex_type == VertexType::kCircle) {
         glEnable(GL_POINT_SMOOTH);
       }
       glDrawElements(GL_POINTS, mesh_->edges.size(), GL_UNSIGNED_INT, nullptr);
-      if (sett_.vertex_type == VertexType::kCircle) {
+      if (settings_.vertex_type == VertexType::kCircle) {
         glDisable(GL_POINT_SMOOTH);
       }
     }

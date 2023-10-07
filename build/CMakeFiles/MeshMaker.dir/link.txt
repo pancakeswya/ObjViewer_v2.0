@@ -1,2 +1,0 @@
-/usr/bin/ar qc libMeshMaker.a CMakeFiles/MeshMaker.dir/objviewer/lib/mesh_maker/mesh_maker.cc.o
-/usr/bin/ranlib libMeshMaker.a
