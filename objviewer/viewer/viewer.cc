@@ -17,7 +17,7 @@ Viewer::Viewer(QWidget* parent)
       settings_("Winfordt", "ObjViewer") {
   ui_->setupUi(this);
   SetTheme();
-  Init();
+  Initialize();
   LoadSettings();
 }
 
@@ -26,7 +26,7 @@ Viewer::~Viewer() {
   delete ui_;
 }
 
-void Viewer::Init() {
+void Viewer::Initialize() {
   ui_->scroll_area_maps->hide();
   connect(ui_->pushbutton_open_file, SIGNAL(clicked()), this,
           SLOT(OnPushButtonOpenFileClicked()));
@@ -262,14 +262,13 @@ void Viewer::OnPushButtonOpenFileClicked() {
   if (filepath.isEmpty()) {
     return;
   }
-  QFileInfo fileInfo(filepath);
   auto stat = ui_->obj_loader->Open(filepath);
   if (stat != Status::kNoExc) {
     QMessageBox::critical(this, "Error",
                           QStringList({"Invalid file",
                                        "No obj file to open"})[int(stat) - 1]);
   }
-  ui_->label_file_name_text->setText(fileInfo.fileName());
+  ui_->label_file_name_text->setText(QFileInfo(filepath).fileName());
   ui_->label_vertex_am_int->setText(
       QString::number(ui_->obj_loader->GetVertexCount()));
   ui_->label_facets_amount_int->setText(

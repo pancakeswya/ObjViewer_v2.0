@@ -22,7 +22,7 @@ class Viewer : public QMainWindow {
   ~Viewer() override;
 
  protected:
-  void Init();
+  void Initialize();
   static void SetTheme();
   void SaveSettings();
   void LoadSettings();
