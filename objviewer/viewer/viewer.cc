@@ -130,8 +130,8 @@ void Viewer::SaveSettings() {
 }
 
 void Viewer::LoadSettings() {
-  QString settingsFilePath = settings_.fileName();
-  QFile file(settingsFilePath);
+  QString settingsfile_path = settings_.fileName();
+  QFile file(settingsfile_path);
   if (file.exists()) {
     ui_->combo_box_projection->setCurrentIndex(
         settings_.value("projection").toInt());
@@ -226,13 +226,13 @@ void Viewer::LoadMaterial(const std::vector<NewMtl>& mtl) {
       layout_mtl->addWidget(button_unload, ++j, 0, 1, 2);
       connect(button_load, &QPushButton::clicked, this,
               [this, i, k, label_map_val]() {
-                QString filepath = QFileDialog::getOpenFileName(
+                QString file_path = QFileDialog::getOpenFileName(
                     this, tr("Load texture"), QDir::homePath(),
                     tr("PNG files (*.png)"));
-                if (filepath.isEmpty()) {
+                if (file_path.isEmpty()) {
                   return;
                 }
-                ui_->obj_loader->ResetTexture(i, k - 1, filepath);
+                ui_->obj_loader->ResetTexture(i, k - 1, file_path);
                 if (label_map_val->text()[0] == 'N') {
                   label_map_val->setText("Textured");
                 }
@@ -244,31 +244,31 @@ void Viewer::LoadMaterial(const std::vector<NewMtl>& mtl) {
               });
       connect(button_uv, &QPushButton::clicked, this,
               [this, i, texpath = map_path[k - 1]]() {
-                QString filepath = QFileDialog::getSaveFileName(
+                QString file_path = QFileDialog::getSaveFileName(
                     this, tr("Save UV-map"), QDir::homePath(),
                     tr("PNG files (*.png)"));
-                if (filepath.isEmpty()) {
+                if (file_path.isEmpty()) {
                   return;
                 }
-                ui_->obj_loader->SaveUvMap(i, texpath, filepath);
+                ui_->obj_loader->SaveUvMap(i, texpath, file_path);
               });
     }
   }
 }
 
 void Viewer::OnPushButtonOpenFileClicked() {
-  QString filepath = QFileDialog::getOpenFileName(
+  QString file_path = QFileDialog::getOpenFileName(
       this, tr("Open File"), QDir::homePath(), tr("OBJ files (*.obj)"));
-  if (filepath.isEmpty()) {
+  if (file_path.isEmpty()) {
     return;
   }
-  auto stat = ui_->obj_loader->Open(filepath);
+  auto stat = ui_->obj_loader->Open(file_path);
   if (stat != Status::kNoExc) {
     QMessageBox::critical(this, "Error",
                           QStringList({"Invalid file",
                                        "No obj file to open"})[int(stat) - 1]);
   }
-  ui_->label_file_name_text->setText(QFileInfo(filepath).fileName());
+  ui_->label_file_name_text->setText(QFileInfo(file_path).fileName());
   ui_->label_vertex_am_int->setText(
       QString::number(ui_->obj_loader->GetVertexCount()));
   ui_->label_facets_amount_int->setText(
@@ -391,8 +391,8 @@ void Viewer::OnPushButtonGifClicked() {
   if (file_dialog.exec() != QDialog::Accepted) {
     return;
   }
-  QString filepath = file_dialog.selectedFiles().constFirst();
-  auto gif = new GifMaker(ui_->obj_loader->GetFrame(), std::move(filepath));
+  QString file_path = file_dialog.selectedFiles().constFirst();
+  auto gif = new GifMaker(ui_->obj_loader->GetFrame(), std::move(file_path));
   connect(gif, &GifMaker::MakinGif, ui_->obj_loader, &Loader::UpdateFrame);
   connect(gif, &GifMaker::GifFailed, this, [this]() {
     QMessageBox::warning(this, "Invalid gif",
