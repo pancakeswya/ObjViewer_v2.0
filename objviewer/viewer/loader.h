@@ -30,10 +30,10 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
  public:
   explicit Loader(QWidget* parent = nullptr);
   ~Loader() override;
-  Status Open(const QString&);
-  void SetVertexColor(const QColor&);
-  void SetEdgeColor(const QColor&);
-  void SetBgColor(const QColor&);
+  Status Open(const QString& path);
+  void SetVertexColor(const QColor& color_point);
+  void SetEdgeColor(const QColor& color_line);
+  void SetBgColor(const QColor& color_bg);
   unsigned int GetVertexCount() noexcept;
   unsigned int GetFacetCount() noexcept;
   unsigned int GetEdgeCount() noexcept;
@@ -42,21 +42,23 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   QColor GetBgColor() noexcept;
   const std::vector<NewMtl>& GetMaterialData() noexcept;
   void SetTextures();
-  void ResetTexture(unsigned int, unsigned int, const QString& = "");
-  void SaveUvMap(unsigned int, std::string_view, const QString&);
+  void ResetTexture(unsigned int index_mtl, unsigned int map_type,
+                    const QString& path = "");
+  void SaveUvMap(unsigned int index_mtl, std::string_view path_texture,
+                 const QString& path_save);
   const QImage& GetFrame();
-  void Rotate(int, int);
-  void Move(double, int);
+  void Rotate(int angle, int axis);
+  void Move(double dist, int axis);
 
  public slots:
-  void Scale(double);
-  void SetEdgeSize(int);
-  void SetVertexSize(int);
-  void SetViewType(int);
-  void SetVertexType(int);
-  void SetEdgeType(int);
-  void SetProjectionType(int);
-  void SetShadingType(int);
+  void Scale(double coef);
+  void SetEdgeSize(int size);
+  void SetVertexSize(int size);
+  void SetViewType(int view_type);
+  void SetVertexType(int type);
+  void SetEdgeType(int type);
+  void SetProjectionType(int proj_type);
+  void SetShadingType(int shading_type);
   void UpdateFrame();
 
  private:
@@ -75,7 +77,7 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   ShaderPaths GetShaderPaths();
 
   void initializeGL() override;
-  void resizeGL(int, int) override;
+  void resizeGL(int width, int height) override;
   void paintGL() override;
 
   void ProgramCreate();

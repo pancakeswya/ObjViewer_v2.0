@@ -28,14 +28,14 @@ class Viewer : public QMainWindow {
   void LoadSettings();
   void LoadMaterial(const std::vector<NewMtl>&);
  private slots:
-  void OnDoubleSpinBoxStepScaleValueChanged(double);
-  void OnDoubleSpinBoxStepMoveValueChanged(double);
+  void OnDoubleSpinBoxStepScaleValueChanged(double new_step);
+  void OnDoubleSpinBoxStepMoveValueChanged(double new_step);
+  void OnDoubleSpinBoxMoveValueChanged(double value);
+  void OnSpinBoxRotateValueChanged(int value);
   void OnPushButtonOpenFileClicked();
   void OnPushButtonBgColorClicked();
   void OnPushButtonEdgeColorClicked();
   void OnPushButtonVertexColorClicked();
-  void OnDoubleSpinBoxMoveValueChanged(double);
-  void OnSpinBoxRotateValueChanged(int);
   void OnPushButtonScreenClicked();
   void OnPushButtonResetClicked();
   void OnPushButtonGifClicked();
