@@ -22,8 +22,8 @@ class Viewer : public QMainWindow {
   ~Viewer() override;
 
  protected:
-  void Initialize();
   static void SetTheme();
+  void Initialize();
   void SaveSettings();
   void LoadSettings();
   void LoadMaterial(const std::vector<NewMtl>&);
