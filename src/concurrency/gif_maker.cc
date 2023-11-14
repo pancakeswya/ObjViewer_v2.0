@@ -1,4 +1,4 @@
-#include "gif_maker.h"
+#include "concurrency/gif_maker.h"
 #include "external/gif.h"
 
 namespace objv {
