@@ -1,5 +1,7 @@
-#ifndef OBJVIEWER_VIEWER_LOADER_LOADER_H_
-#define OBJVIEWER_VIEWER_LOADER_LOADER_H_
+#ifndef SRC_VIEWER_LOADER_LOADER_H_
+#define SRC_VIEWER_LOADER_LOADER_H_
+
+#include "base/mesh_maker.h"
 
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
@@ -8,10 +10,8 @@
 #include <QOpenGLWidget>
 
 #include <array>
-#include <unordered_map>
 #include <memory>
-
-#include "objviewer/lib/mesh_maker/mesh_maker.h"
+#include <unordered_map>
 
 namespace objv {
 
@@ -69,9 +69,9 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   using SolidShaderPaths = std::unordered_map<ShadingType,ShaderPaths>;
   using WireframeShaderPaths = std::unordered_map<EdgeType, ShaderPaths>;
 
-  inline static TextureShaderPaths map_texture_;
-  inline static SolidShaderPaths map_solid_;
-  inline static WireframeShaderPaths map_wireframe_;
+  static inline TextureShaderPaths map_texture_;
+  static inline SolidShaderPaths map_solid_;
+  static inline WireframeShaderPaths map_wireframe_;
 
   static void InitializeShaderPaths();
   ShaderPaths GetShaderPaths();
@@ -114,4 +114,4 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
 
 }  // namespace objv
 
-#endif  // OBJVIEWER_VIEWER_LOADER_LOADER_H_
+#endif  // SRC_VIEWER_LOADER_LOADER_H_

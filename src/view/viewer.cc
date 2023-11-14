@@ -1,4 +1,6 @@
 #include "viewer.h"
+#include "ui_viewer.h"
+#include "concurrency/gif_maker.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
@@ -6,8 +8,6 @@
 #include <QMessageBox>
 #include <QStandardPaths>
 #include <QStyleFactory>
-
-#include "objviewer/util/gif_maker.h"
 
 namespace objv {
 

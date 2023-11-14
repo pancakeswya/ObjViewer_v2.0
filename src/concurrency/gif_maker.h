@@ -1,9 +1,9 @@
-#ifndef OBJVIEWER_UTIL_GIFMAKER_H_
-#define OBJVIEWER_UTIL_GIFMAKER_H_
+#ifndef SRC_CONCURRENCY_GIFMAKER_H_
+#define SRC_CONCURRENCY_GIFMAKER_H_
 
 #include <QImage>
+#include <QString>
 #include <QThread>
-#include <utility>
 
 namespace objv {
 
@@ -26,4 +26,4 @@ inline GifMaker::GifMaker(const QImage &frame, QString path)
 
 }  // namespace objv
 
-#endif  // OBJVIEWER_UTIL_GIFMAKER_H_
+#endif  // SRC_CONCURRENCY_GIFMAKER_H_

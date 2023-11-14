@@ -1,10 +1,10 @@
-#ifndef OBJVIEWER_VIEWER_VIEWER_H_
-#define OBJVIEWER_VIEWER_VIEWER_H_
+#ifndef SRC_VIEWER_VIEWER_H_
+#define SRC_VIEWER_VIEWER_H_
+
+#include "types/data_types.h"
 
 #include <QMainWindow>
 #include <QSettings>
-
-#include "ui_viewer.h"
 
 namespace objv {
 
@@ -47,4 +47,4 @@ class Viewer : public QMainWindow {
 
 }  // namespace objv
 
-#endif  // OBJVIEWER_VIEWER_VIEWER_H_
+#endif  // SRC_VIEWER_VIEWER_H_

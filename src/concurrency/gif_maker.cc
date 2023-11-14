@@ -1,5 +1,4 @@
 #include "gif_maker.h"
-
 #include "external/gif.h"
 
 namespace objv {

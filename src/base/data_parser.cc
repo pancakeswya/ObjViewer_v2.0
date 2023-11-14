@@ -1,12 +1,9 @@
-#include "data_parser.h"
+#include "base/data_parser.h"
+#include "external/earcut.h"
 
-#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <map>
-
-#include "external/earcut.h"
 
 namespace objv::DataParser {
 

@@ -1,4 +1,4 @@
-#include "loader.h"
+#include "view/loader.h"
 
 #include <QDir>
 #include <QFileDialog>

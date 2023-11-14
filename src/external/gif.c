@@ -1,4 +1,4 @@
-#include "gif.h"
+#include "external/gif.h"
 
 static const int kGifTransIndex = 0;
 
