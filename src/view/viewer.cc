@@ -1,5 +1,5 @@
-#include "viewer.h"
-#include "ui_viewer.h"
+#include "view/viewer.h"
+#include "view/ui_viewer.h"
 #include "concurrency/gif_maker.h"
 
 #include <QColorDialog>
