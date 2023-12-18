@@ -26,18 +26,30 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets ${QT_OPENGL_WIDGETS_MODULE
 include_directories("src")
 
 add_library(Gif STATIC
-    src/external/gif.h
-    src/external/gif.c)
+    src/third_party/gif.h
+    src/third_party/gif.c)
 
 add_library(DataParser STATIC
-    src/base/data_parser.h
-    src/base/data_parser.cc)
+    src/model/data_parser.h
+    src/model/data_parser.cc)
 
 add_library(MeshMaker STATIC
-    src/base/mesh_maker.h
-    src/base/mesh_maker.cc)
+    src/model/mesh_maker.h
+    src/model/mesh_maker.cc)
 
 target_link_libraries(MeshMaker DataParser)
+
+add_library(Model STATIC
+    src/model/model.cc
+    src/model/model.h)
+
+target_link_libraries(Model MeshMaker)
+
+add_library(Controller STATIC
+    src/controller/controller.cc
+    src/controller/controller.h)
+
+target_link_libraries(Controller Model)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -47,7 +59,7 @@ add_library(ObjLoader STATIC
     src/view/loader.cc
     src/view/loader.h)
 
-target_link_libraries(ObjLoader Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} MeshMaker)
+target_link_libraries(ObjLoader Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} Controller)
 
 set (QRC_FILES resources/resources.qrc)
 
@@ -55,9 +67,13 @@ set(PROJECT_SOURCES
     src/main.cc
     src/concurrency/gif_maker.cc
     src/concurrency/gif_maker.h
-    src/view/viewer.cc
-    src/view/viewer.h
-    src/view/viewer.ui
+    src/model/model.cc
+    src/model/model.h
+    src/controller/controller.cc
+    src/controller/controller.h
+    src/view/view.cc
+    src/view/view.h
+    src/view/view.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

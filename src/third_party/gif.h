@@ -87,4 +87,4 @@ bool GifEnd(GifWriter* writer);
 }
 #endif
 
-#endif // GIF_H_
+#endif  // GIF_H_

@@ -1,17 +1,16 @@
 #ifndef SRC_VIEWER_LOADER_LOADER_H_
 #define SRC_VIEWER_LOADER_LOADER_H_
 
-#include "base/mesh_maker.h"
-
+#include <array>
+#include <memory>
+#include <unordered_map>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 
-#include <array>
-#include <memory>
-#include <unordered_map>
+#include "controller/controller.h"
 
 namespace objv {
 
@@ -28,9 +27,11 @@ enum class VertexType : short int { kNone, kQuad, kCircle };
 class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   Q_OBJECT
  public:
+  explicit Loader(Controller* controller);
   explicit Loader(QWidget* parent = nullptr);
   ~Loader() override;
   Status Open(const QString& path);
+  void SetController(Controller* controller) noexcept;
   void SetVertexColor(const QColor& color_point);
   void SetEdgeColor(const QColor& color_line);
   void SetBgColor(const QColor& color_bg);
@@ -65,8 +66,9 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   struct Maps;
 
   using ShaderPaths = std::pair<std::string_view, std::string_view>;
-  using TextureShaderPaths = std::unordered_map<bool, std::unordered_map<ShadingType, ShaderPaths>>;
-  using SolidShaderPaths = std::unordered_map<ShadingType,ShaderPaths>;
+  using TextureShaderPaths =
+      std::unordered_map<bool, std::unordered_map<ShadingType, ShaderPaths>>;
+  using SolidShaderPaths = std::unordered_map<ShadingType, ShaderPaths>;
   using WireframeShaderPaths = std::unordered_map<EdgeType, ShaderPaths>;
 
   static inline TextureShaderPaths map_texture_;
@@ -83,8 +85,9 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   void ProgramCreate();
   void ProgramDestroy();
 
+  const Mesh* mesh_{};
+  Controller* controller_{};
   std::unique_ptr<Maps[]> maps_{};
-  std::unique_ptr<Mesh> mesh_{};
   QOpenGLBuffer vbo_;
   QOpenGLBuffer ebo_;
   QOpenGLShaderProgram* program_{};

@@ -1,6 +1,4 @@
-#include "view/viewer.h"
-#include "view/ui_viewer.h"
-#include "concurrency/gif_maker.h"
+#include "view/view.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
@@ -9,24 +7,29 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 
+#include "view/ui_view.h"
+#include "concurrency/gif_maker.h"
+
 namespace objv {
 
-Viewer::Viewer(QWidget* parent)
-    : QMainWindow(parent),
-      ui_(new Ui::Viewer),
-      settings_("Winfordt", "ObjViewer") {
+View::View(Controller* controller) : View() {
+  ui_->obj_loader->SetController(controller);
+}
+
+View::View(QWidget* parent)
+    : QMainWindow(parent), ui_(new Ui::View), settings_("Winfordt", "ObjView") {
   ui_->setupUi(this);
   SetTheme();
   Initialize();
   LoadSettings();
 }
 
-Viewer::~Viewer() {
+View::~View() {
   SaveSettings();
   delete ui_;
 }
 
-void Viewer::Initialize() {
+void View::Initialize() {
   ui_->scroll_area_maps->hide();
   connect(ui_->pushbutton_open_file, SIGNAL(clicked()), this,
           SLOT(OnPushButtonOpenFileClicked()));
@@ -99,7 +102,7 @@ void Viewer::Initialize() {
           &Loader::SetShadingType);
 }
 
-void Viewer::SetTheme() {
+void View::SetTheme() {
   QApplication::setStyle(QStyleFactory::create("Fusion"));
   QPalette darkPalette;
   darkPalette.setColor(QPalette::Window, QColor(36, 36, 36));
@@ -118,7 +121,7 @@ void Viewer::SetTheme() {
   QApplication::setPalette(darkPalette);
 }
 
-void Viewer::SaveSettings() {
+void View::SaveSettings() {
   settings_.setValue("projection", ui_->combo_box_projection->currentIndex());
   settings_.setValue("edge type", ui_->combo_box_edge_type->currentIndex());
   settings_.setValue("edge color", ui_->obj_loader->GetEdgeColor());
@@ -129,7 +132,7 @@ void Viewer::SaveSettings() {
   settings_.setValue("background color", ui_->obj_loader->GetBgColor());
 }
 
-void Viewer::LoadSettings() {
+void View::LoadSettings() {
   QString settingsfile_path = settings_.fileName();
   QFile file(settingsfile_path);
   if (file.exists()) {
@@ -166,7 +169,7 @@ void ClearLayout(QLayout* layout) {
 
 }  // namespace
 
-void Viewer::LoadMaterial(const std::vector<NewMtl>& mtl) {
+void View::LoadMaterial(const std::vector<NewMtl>& mtl) {
   auto& layout = ui_->grid_layout_material;
   ClearLayout(layout);
   ui_->scroll_area_maps->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -256,7 +259,7 @@ void Viewer::LoadMaterial(const std::vector<NewMtl>& mtl) {
   }
 }
 
-void Viewer::OnPushButtonOpenFileClicked() {
+void View::OnPushButtonOpenFileClicked() {
   QString file_path = QFileDialog::getOpenFileName(
       this, tr("Open File"), QDir::homePath(), tr("OBJ files (*.obj)"));
   if (file_path.isEmpty()) {
@@ -264,9 +267,9 @@ void Viewer::OnPushButtonOpenFileClicked() {
   }
   auto stat = ui_->obj_loader->Open(file_path);
   if (stat != Status::kNoExc) {
-    QMessageBox::critical(this, "Error",
-                          QStringList({"Invalid file",
-                                       "No obj file to open"})[int(stat) - 1]);
+    QMessageBox::critical(
+        this, "Error",
+        QStringList({"Invalid file", "No obj file to open"})[int(stat) - 1]);
   }
   ui_->label_file_name_text->setText(QFileInfo(file_path).fileName());
   ui_->label_vertex_am_int->setText(
@@ -279,32 +282,32 @@ void Viewer::OnPushButtonOpenFileClicked() {
   LoadMaterial(ui_->obj_loader->GetMaterialData());
 }
 
-void Viewer::OnPushButtonBgColorClicked() {
+void View::OnPushButtonBgColorClicked() {
   QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
   if (color.isValid()) {
     ui_->obj_loader->SetBgColor(color);
   }
 }
 
-void Viewer::OnPushButtonEdgeColorClicked() {
+void View::OnPushButtonEdgeColorClicked() {
   QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
   if (color.isValid()) {
     ui_->obj_loader->SetEdgeColor(color);
   }
 }
 
-void Viewer::OnPushButtonVertexColorClicked() {
+void View::OnPushButtonVertexColorClicked() {
   QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
   if (color.isValid()) {
     ui_->obj_loader->SetVertexColor(color);
   }
 }
 
-void Viewer::OnDoubleSpinBoxStepScaleValueChanged(double new_step) {
+void View::OnDoubleSpinBoxStepScaleValueChanged(double new_step) {
   ui_->d_spin_box_scale->setSingleStep(new_step);
 }
 
-void Viewer::OnDoubleSpinBoxStepMoveValueChanged(double new_step) {
+void View::OnDoubleSpinBoxStepMoveValueChanged(double new_step) {
   auto spin_box_step_move = dynamic_cast<QDoubleSpinBox*>(sender());
   int index_step_move =
       ui_->vertical_layout_d_spin_boxes_step_move->indexOf(spin_box_step_move);
@@ -313,19 +316,19 @@ void Viewer::OnDoubleSpinBoxStepMoveValueChanged(double new_step) {
   spin_box_move->setSingleStep(new_step);
 }
 
-void Viewer::OnDoubleSpinBoxMoveValueChanged(double value) {
+void View::OnDoubleSpinBoxMoveValueChanged(double value) {
   auto move_spin_box = dynamic_cast<QDoubleSpinBox*>(sender());
   ui_->obj_loader->Move(
       value, ui_->vertical_layout_spin_boxes_move->indexOf(move_spin_box));
 }
 
-void Viewer::OnSpinBoxRotateValueChanged(int value) {
+void View::OnSpinBoxRotateValueChanged(int value) {
   auto rotate_spin_box = dynamic_cast<QSpinBox*>(sender());
   ui_->obj_loader->Rotate(
       value, ui_->vertical_layout_rotate_spin_boxes->indexOf(rotate_spin_box));
 }
 
-void Viewer::OnPushButtonScreenClicked() {
+void View::OnPushButtonScreenClicked() {
   const QRect rect(0, 0, ui_->obj_loader->width(), ui_->obj_loader->height());
   QPixmap pixmap = ui_->obj_loader->grab(rect);
   const QString format = "png";
@@ -362,7 +365,7 @@ void Viewer::OnPushButtonScreenClicked() {
   }
 }
 
-void Viewer::OnPushButtonResetClicked() {
+void View::OnPushButtonResetClicked() {
   ui_->combo_box_projection->setCurrentIndex(0);
   ui_->combo_box_edge_type->setCurrentIndex(0);
   ui_->obj_loader->SetEdgeColor(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
@@ -373,7 +376,7 @@ void Viewer::OnPushButtonResetClicked() {
   ui_->obj_loader->SetBgColor(QColor(Qt::black));
 }
 
-void Viewer::OnPushButtonGifClicked() {
+void View::OnPushButtonGifClicked() {
   const QString format = "gif";
   QString save_path =
       QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);

@@ -2,6 +2,7 @@ OS           := $(shell uname -s)
 
 NAME         := ObjViewer_v2
 
+SRC_DIR      := src
 BUILD_DIR    := build
 DOCS_DIR     := docs
 DVI_DIR      := manual
@@ -51,7 +52,7 @@ dist:
 	mv $(NAME).tgz $(HOME)/Desktop
 
 check-style:
-	find $(SRC_DIR) -name '*.cc' -o -name '*.c' -o -name '*.h' | xargs clang-format -style=google -n
+	find $(SRC_DIR) -name '*.cc' -o -name '*.c' -o -name '*.h' | xargs clang-format -style=google -i
 
 .PHONY: test gcov_report check-valgrind
 

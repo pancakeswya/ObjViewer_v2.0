@@ -1,9 +1,10 @@
-#include "base/data_parser.h"
-#include "external/earcut.h"
+#include "model/data_parser.h"
 
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+
+#include "third_party/earcut.h"
 
 namespace objv::DataParser {
 
@@ -43,9 +44,8 @@ long int FileSize(std::ifstream& file) {
   file.seekg(p, std::ifstream::beg);
   if (n > 0) {
     return n;
-  } else {
-    return 0;
   }
+  return 0;
 }
 
 std::string GetName(const char** ptr) {
@@ -233,7 +233,7 @@ void ProcessPolygon(Data& data, const std::vector<Index>& raw_ind,
       Point3D polypoint = {v0x, v0y, v0z};
       Point3D loc = WorldToLocal(polypoint, axis_u, axis_v, axis_w);
 
-      polyline.emplace_back(std::pair(loc.x, loc.y));
+      polyline.emplace_back(loc.x, loc.y);
     }
     polygon.push_back(polyline);
     std::vector<unsigned int> order = mapbox::earcut(polygon);
@@ -241,8 +241,8 @@ void ProcessPolygon(Data& data, const std::vector<Index>& raw_ind,
       stat = Status::kInvalidFile;
       return;
     }
-    for (auto& i : order) {
-      data.indices.push_back(raw_ind[i]);
+    for (unsigned int idx : order) {
+      data.indices.push_back(raw_ind[idx]);
     }
   } else {
     // polygon is a triangle just move it in
@@ -338,15 +338,28 @@ const char* ParseFacet(const char* ptr, Data& data) {
   return ptr;
 }
 
+NewMtl DefaultMtl() noexcept {
+  return {.name = "",
+          .map_ka = "",
+          .map_kd = "",
+          .map_ks = "",
+          .Ns = 32.0f,
+          .d = 1.0f,
+          .Ka = {},
+          .Kd = {0.7f, 0.7f, 0.7f},
+          .Ks = {},
+          .Ke = {}};
+}
+
 const char* ParseMtl(const char* p, Data& data) {
   std::string path_mtl = GetName(&p);
   std::ifstream mtl_file(data.dir_path + path_mtl, std::ifstream::binary);
   if (mtl_file.is_open()) {
-    NewMtl new_mtl;
+    auto new_mtl = DefaultMtl();
     bool found_d = false;
 
     long int bytes = FileSize(mtl_file);
-    char* buf = new char[bytes + 1];
+    auto buf = new char[bytes + 1];
     unsigned int read = mtl_file.readsome(buf, bytes);
     buf[read] = '\0';
 
@@ -362,7 +375,7 @@ const char* ParseMtl(const char* p, Data& data) {
               ptr[3] == 't' && ptr[4] == 'l' && IsSpace(ptr[5])) {
             if (!new_mtl.name.empty()) {
               data.mtl.push_back(std::move(new_mtl));
-              new_mtl = {};
+              new_mtl = DefaultMtl();
             }
             ptr += 5;
             new_mtl.name = GetName(&ptr);
@@ -503,7 +516,7 @@ void ReadFile(std::string_view path, Data& data) {
     p.remove_filename();
     data.dir_path = p.generic_string();
   }
-  char* buffer = new char[2 * kBufferSize];
+  auto buffer = new char[2 * kBufferSize];
   start = buffer;
   for (;;) {
     read = file.readsome(start, kBufferSize);
@@ -536,10 +549,10 @@ void ReadFile(std::string_view path, Data& data) {
     start = buffer + bytes;
   }
   if (data.mtl.empty()) {
-    data.mtl.emplace_back(NewMtl{});
+    data.mtl.emplace_back(DefaultMtl());
   }
   if (data.usemtl.empty()) {
-    data.usemtl.emplace_back(UseMtl{});
+    data.usemtl.emplace_back();
   }
   data.usemtl.back().offset_fv = data.indices.size();
   data.usemtl.back().offset_uv = data.uv.size();
@@ -547,7 +560,7 @@ void ReadFile(std::string_view path, Data& data) {
   file.close();
 }
 
-inline void Flush(Data* data) {
+inline void Flush(Data* data) noexcept {
   std::vector<NewMtl>().swap(data->mtl);
   std::vector<UseMtl>().swap(data->usemtl);
   std::vector<Index>().swap(data->indices);

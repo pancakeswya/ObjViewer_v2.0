@@ -1,11 +1,12 @@
 #include "view/loader.h"
 
+#include <cmath>
 #include <QDir>
 #include <QFileDialog>
 #include <QOpenGLTexture>
 #include <QPainter>
 
-#include <cmath>
+#include "types/gif_settings.h"
 
 namespace objv {
 
@@ -60,29 +61,32 @@ inline Loader::Maps::Maps()
       diffuse(QOpenGLTexture::Target2D),
       specular(QOpenGLTexture::Target2D) {}
 
+Loader::Loader(Controller* controller) : Loader() { controller_ = controller; }
+
 Loader::Loader(QWidget* parent)
     : QOpenGLWidget(parent),
       vbo_(QOpenGLBuffer::VertexBuffer),
       ebo_(QOpenGLBuffer::IndexBuffer),
       settings_{.proj_type = ProjType::kParallel,
-            .vertex_size = 1.0f,
-            .edge_size = 1.0f,
-            .color_line{0.7f, 0.7f, 0.7f},
-            .color_point{0.7f, 0.7f, 0.7f},
-            .color_bg{Qt::black}} {}
+                .vertex_size = 1.0f,
+                .edge_size = 1.0f,
+                .color_line{0.7f, 0.7f, 0.7f},
+                .color_point{0.7f, 0.7f, 0.7f},
+                .color_bg{Qt::black}} {}
 
-Loader::~Loader() {
-  ProgramDestroy();
-}
+Loader::~Loader() { ProgramDestroy(); }
 
 void Loader::UpdateFrame() {
-  frame_ = grabFramebuffer().scaled(640, 480, Qt::IgnoreAspectRatio).mirrored();
+  frame_ = grabFramebuffer()
+               .scaled(kGifWidth, kGifHeight, Qt::IgnoreAspectRatio)
+               .mirrored();
 }
 
 Status Loader::Open(const QString& path) {
   ProgramDestroy();
-  auto [mesh, stat] = MeshMaker::MakeFromFile(path.toStdString());
-  mesh_.reset(mesh);
+  controller_->Reset();
+  auto [mesh, stat] = controller_->MeshFromFile(path.toStdString());
+  mesh_ = mesh;
   if (stat == Status::kNoExc) {
     ProgramCreate();
     SetTextures();
@@ -90,6 +94,10 @@ Status Loader::Open(const QString& path) {
     update();
   }
   return stat;
+}
+
+void Loader::SetController(Controller* controller) noexcept {
+  controller_ = controller;
 }
 
 void Loader::ProgramDestroy() {
@@ -125,20 +133,29 @@ void Loader::Move(double dist, int axis) {
 }
 
 void Loader::InitializeShaderPaths() {
-  map_texture_[true][ShadingType::kSmooth] = {":/shaders/texture.vert", ":/shaders/texture.frag"};
-  map_texture_[true][ShadingType::kFlat] = {":/shaders/texture.vert", ":/shaders/texture_flat.frag"};
-  map_texture_[false][ShadingType::kSmooth] = {":/shaders/texture_no_normals.vert", ":/shaders/texture_no_normals.frag"};
-  map_texture_[false][ShadingType::kFlat] = {":/shaders/texture_no_normals.vert", ":/shaders/texture_no_normals.frag"};
-  map_solid_[ShadingType::kSmooth] = {":/shaders/solid.vert", ":/shaders/solid.frag"};
-  map_solid_[ShadingType::kFlat] = {":/shaders/solid.vert", ":/shaders/solid_flat.frag"};
-  map_wireframe_[EdgeType::kSolid] = {":/shaders/wireframe.vert", ":/shaders/wireframe.frag"};
-  map_wireframe_[EdgeType::kDashed] = {":/shaders/wireframe_dashed.vert", ":/shaders/wireframe_dashed.frag"};
+  map_texture_[true][ShadingType::kSmooth] = {":/shaders/texture.vert",
+                                              ":/shaders/texture.frag"};
+  map_texture_[true][ShadingType::kFlat] = {":/shaders/texture.vert",
+                                            ":/shaders/texture_flat.frag"};
+  map_texture_[false][ShadingType::kSmooth] = {
+      ":/shaders/texture_no_normals.vert", ":/shaders/texture_no_normals.frag"};
+  map_texture_[false][ShadingType::kFlat] = {
+      ":/shaders/texture_no_normals.vert", ":/shaders/texture_no_normals.frag"};
+  map_solid_[ShadingType::kSmooth] = {":/shaders/solid.vert",
+                                      ":/shaders/solid.frag"};
+  map_solid_[ShadingType::kFlat] = {":/shaders/solid.vert",
+                                    ":/shaders/solid_flat.frag"};
+  map_wireframe_[EdgeType::kSolid] = {":/shaders/wireframe.vert",
+                                      ":/shaders/wireframe.frag"};
+  map_wireframe_[EdgeType::kDashed] = {":/shaders/wireframe_dashed.vert",
+                                       ":/shaders/wireframe_dashed.frag"};
 }
 
 Loader::ShaderPaths Loader::GetShaderPaths() {
   if (settings_.model_view_type == ViewType::kMaterial && mesh_->has_textures) {
     return map_texture_[mesh_->has_normals][settings_.shading_type];
-  } else if (settings_.model_view_type != ViewType::kWireframe && mesh_->has_normals) {
+  } else if (settings_.model_view_type != ViewType::kWireframe &&
+             mesh_->has_normals) {
     return map_solid_[settings_.shading_type];
   }
   return map_wireframe_[settings_.edge_type];
@@ -189,7 +206,8 @@ void Loader::ProgramCreate() {
   ebo_.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
   program_->enableAttributeArray("a_position");
-  size_t stride = (3 + 3 * mesh_->has_normals + 2 * mesh_->has_textures) * sizeof(float);
+  size_t stride =
+      (3 + 3 * mesh_->has_normals + 2 * mesh_->has_textures) * sizeof(float);
   if (settings_.model_view_type != ViewType::kWireframe &&
       (mesh_->has_normals || mesh_->has_textures)) {
     vbo_.allocate(mesh_->vertices.data(),
@@ -236,7 +254,9 @@ unsigned int Loader::GetFacetCount() noexcept { return mesh_->facet_count; }
 
 unsigned int Loader::GetEdgeCount() noexcept { return mesh_->edges.size() / 2; }
 
-const std::vector<NewMtl>& Loader::GetMaterialData() noexcept { return mesh_->mtl; }
+const std::vector<NewMtl>& Loader::GetMaterialData() noexcept {
+  return mesh_->mtl;
+}
 
 QColor Loader::GetEdgeColor() noexcept {
   return QColor::fromRgbF(settings_.color_line.x(), settings_.color_line.y(),
@@ -282,7 +302,7 @@ void Loader::SaveUvMap(unsigned int index_mtl, std::string_view path_texture,
     return;
   }
   unsigned int prev_off = 0;
-  for (auto& umtl : mesh_->usemtl) {
+  for (const UseMtl& umtl : mesh_->usemtl) {
     if (umtl.index == index_mtl) {
       auto img = QImage(path_texture.data()).mirrored();
       QPainter painter(&img);
@@ -418,7 +438,7 @@ void Loader::paintGL() {
   if (settings_.model_view_type != ViewType::kWireframe &&
       (mesh_->has_normals || mesh_->has_textures)) {
     size_t prev_offset = 0;
-    for (auto& usemtl : mesh_->usemtl) {
+    for (const UseMtl& usemtl : mesh_->usemtl) {
       program_->setUniformValue(locations_[kAmbientU],
                                 &mesh_->mtl[usemtl.index].Ka);
       program_->setUniformValue(locations_[kDiffuseU],

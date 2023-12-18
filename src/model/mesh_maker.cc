@@ -1,17 +1,17 @@
-#include "base/mesh_maker.h"
-#include "base/data_parser.h"
+#include "model/mesh_maker.h"
 
 #include <map>
 #include <set>
 #include <future>
+
+#include "model/data_parser.h"
 
 namespace objv::MeshMaker {
 
 namespace {
 
 struct compare {
-  bool operator()(const Index& lhs,
-                  const Index& rhs) const noexcept {
+  bool operator()(const Index& lhs, const Index& rhs) const noexcept {
     if (lhs.fv < rhs.fv) return true;
     if (rhs.fv < lhs.fv) return false;
     if (lhs.fn < rhs.fn) return true;
@@ -23,7 +23,8 @@ struct compare {
 
 using IndexMap = std::map<Index, unsigned int, compare>;
 
-std::vector<unsigned int> SetUniqueEdges(const std::vector<unsigned int>& edges) {
+std::vector<unsigned int> SetUniqueEdges(
+    const std::vector<unsigned int>& edges) {
   std::vector<unsigned int> unique_edges;
   std::set<std::pair<unsigned int, unsigned int>> edges_set;
   for (size_t i = 0; i < edges.size(); i += 2) {
@@ -67,7 +68,7 @@ void DataToMesh(Data* data, Mesh* mesh) {
     mesh->mtl = std::move(data->mtl);
     // create vertex for each unique index
     unsigned int next_combined_idx = 0, combined_idx = 0;
-    for (auto& idx : data->indices) {
+    for (const Index& idx : data->indices) {
       if (index_map.count(idx)) {
         combined_idx = index_map.at(idx);
       } else {

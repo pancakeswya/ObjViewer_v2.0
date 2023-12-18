@@ -21,13 +21,12 @@ struct NewMtl {
   std::string map_ks;
   float Ns;
   float d;
-  float Ka[3]{};
+  float Ka[3];
   float Kd[3];
-  float Ks[3]{};
-  float Ke[3]{};
-  NewMtl();
-  ~NewMtl() = default;
+  float Ks[3];
+  float Ke[3];
 };
+
 
 struct UseMtl {
   unsigned int index;
@@ -77,8 +76,6 @@ struct Mesh {
   std::vector<UseMtl> usemtl;
   std::vector<NewMtl> mtl;
 };
-
-inline NewMtl::NewMtl() : Ns(32.0f), d(1.0f), Kd{0.7f, 0.7f, 0.7f} {}
 
 }  // namespace objv
 
