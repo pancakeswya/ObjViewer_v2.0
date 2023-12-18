@@ -11,8 +11,8 @@ class Model {
  public:
   Model();
   ~Model();
-  Status MeshFromFile(std::string_view path);
   const Mesh* GetMesh() noexcept;
+  Status MeshFromFile(std::string_view path);
   void Reset() noexcept;
 
  private:
