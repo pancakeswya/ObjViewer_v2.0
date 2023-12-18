@@ -1,14 +1,14 @@
 #ifndef SRC_VIEWER_LOADER_LOADER_H_
 #define SRC_VIEWER_LOADER_LOADER_H_
 
-#include <array>
-#include <memory>
-#include <unordered_map>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
+#include <array>
+#include <memory>
+#include <unordered_map>
 
 #include "controller/controller.h"
 

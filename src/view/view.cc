@@ -7,8 +7,8 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 
-#include "view/ui_view.h"
 #include "concurrency/gif_maker.h"
+#include "view/ui_view.h"
 
 namespace objv {
 

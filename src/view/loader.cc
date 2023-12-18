@@ -1,10 +1,10 @@
 #include "view/loader.h"
 
-#include <cmath>
 #include <QDir>
 #include <QFileDialog>
 #include <QOpenGLTexture>
 #include <QPainter>
+#include <cmath>
 
 #include "types/gif_settings.h"
 

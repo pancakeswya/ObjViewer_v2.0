@@ -52,7 +52,7 @@ dist:
 	mv $(NAME).tgz $(HOME)/Desktop
 
 check-style:
-	find $(SRC_DIR) -name '*.cc' -o -name '*.c' -o -name '*.h' | xargs clang-format -style=google -i
+	find $(SRC_DIR) -name '*.cc' -o -name '*.c' -o -name '*.h' | xargs clang-format -style=google -n
 
 .PHONY: test gcov_report check-valgrind
 

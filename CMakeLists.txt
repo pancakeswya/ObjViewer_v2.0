@@ -29,21 +29,13 @@ add_library(Gif STATIC
     src/third_party/gif.h
     src/third_party/gif.c)
 
-add_library(DataParser STATIC
-    src/model/data_parser.h
-    src/model/data_parser.cc)
-
-add_library(MeshMaker STATIC
-    src/model/mesh_maker.h
-    src/model/mesh_maker.cc)
-
-target_link_libraries(MeshMaker DataParser)
-
 add_library(Model STATIC
+    src/model/data_parser.h
+    src/model/data_parser.cc
+    src/model/mesh_maker.h
+    src/model/mesh_maker.cc
     src/model/model.cc
     src/model/model.h)
-
-target_link_libraries(Model MeshMaker)
 
 add_library(Controller STATIC
     src/controller/controller.cc
@@ -67,10 +59,6 @@ set(PROJECT_SOURCES
     src/main.cc
     src/concurrency/gif_maker.cc
     src/concurrency/gif_maker.h
-    src/model/model.cc
-    src/model/model.h
-    src/controller/controller.cc
-    src/controller/controller.h
     src/view/view.cc
     src/view/view.h
     src/view/view.ui

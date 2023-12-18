@@ -1,10 +1,10 @@
 #ifndef SRC_MODEL_MESH_MAKER_H_
 #define SRC_MODEL_MESH_MAKER_H_
 
-#include "types/data_types.h"
-
 #include <string_view>
 #include <utility>
+
+#include "types/data_types.h"
 
 namespace objv::MeshMaker {
 

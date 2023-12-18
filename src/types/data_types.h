@@ -27,7 +27,6 @@ struct NewMtl {
   float Ke[3];
 };
 
-
 struct UseMtl {
   unsigned int index;
   unsigned int offset_fv;
