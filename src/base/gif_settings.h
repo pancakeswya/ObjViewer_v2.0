@@ -1,5 +1,5 @@
-#ifndef SRC_TYPES_GIF_SETTINGS_H_
-#define SRC_TYPES_GIF_SETTINGS_H_
+#ifndef SRC_BASE_GIF_SETTINGS_H_
+#define SRC_BASE_GIF_SETTINGS_H_
 
 namespace objv {
 
@@ -13,4 +13,4 @@ constexpr bool kGifDither = false;
 
 }  // namespace objv
 
-#endif  // SRC_TYPES_GIF_SETTINGS_H_
+#endif  // SRC_BASE_GIF_SETTINGS_H_

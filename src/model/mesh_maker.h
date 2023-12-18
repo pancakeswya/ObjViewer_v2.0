@@ -4,7 +4,7 @@
 #include <string_view>
 #include <utility>
 
-#include "types/data_types.h"
+#include "base/data_types.h"
 
 namespace objv::MeshMaker {
 

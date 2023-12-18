@@ -1,5 +1,5 @@
-#ifndef SRC_TYPES_DATA_TYPES_H_
-#define SRC_TYPES_DATA_TYPES_H_
+#ifndef SRC_BASE_DATA_TYPES_H_
+#define SRC_BASE_DATA_TYPES_H_
 
 #include <string>
 #include <vector>
@@ -78,4 +78,4 @@ struct Mesh {
 
 }  // namespace objv
 
-#endif  // SRC_TYPES_DATA_TYPES_H_
+#endif  // SRC_BASE_DATA_TYPES_H_

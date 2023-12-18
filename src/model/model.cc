@@ -4,7 +4,7 @@
 
 namespace objv {
 
-Model::Model() : mesh_() {}
+Model::Model() noexcept : mesh_() {}
 
 Model::~Model() { delete mesh_; }
 

@@ -1,7 +1,7 @@
 #include "concurrency/gif_maker.h"
 
 #include "third_party/gif.h"
-#include "types/gif_settings.h"
+#include "base/gif_settings.h"
 
 namespace objv {
 

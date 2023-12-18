@@ -6,7 +6,7 @@
 #include <QPainter>
 #include <cmath>
 
-#include "types/gif_settings.h"
+#include "base/gif_settings.h"
 
 namespace objv {
 

@@ -5,7 +5,7 @@
 #include <QSettings>
 
 #include "controller/controller.h"
-#include "types/data_types.h"
+#include "base/data_types.h"
 
 namespace objv {
 
