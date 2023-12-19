@@ -78,12 +78,13 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   static void InitializeShaderPaths();
   ShaderPaths GetShaderPaths();
 
+  void paintGL() override;
   void initializeGL() override;
   void resizeGL(int width, int height) override;
-  void paintGL() override;
 
   void ProgramCreate();
   void ProgramDestroy();
+  void SetupProjection(int width, int height) noexcept;
 
   const Mesh* mesh_{};
   Controller* controller_{};

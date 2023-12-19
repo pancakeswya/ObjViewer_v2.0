@@ -7,7 +7,7 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 
-#include "concurrency/gif_maker.h"
+#include "concurrency/gif_thread.h"
 #include "view/ui_viewer.h"
 
 namespace objv {
@@ -397,15 +397,18 @@ void Viewer::OnPushButtonGifClicked() {
     return;
   }
   QString file_path = file_dialog.selectedFiles().constFirst();
-  auto gif = new GifMaker(ui_->obj_loader->GetFrame(), std::move(file_path));
-  connect(gif, &GifMaker::MakinGif, ui_->obj_loader, &Loader::UpdateFrame);
-  connect(gif, &GifMaker::GifFailed, this, [this]() {
+  auto gif_thread =
+      new GifThread(ui_->obj_loader->GetFrame(), std::move(file_path));
+  connect(gif_thread, &GifThread::Running, ui_->obj_loader,
+          &Loader::UpdateFrame);
+  connect(gif_thread, &GifThread::Failed, this, [this]() {
     QMessageBox::warning(this, "Invalid gif",
                          "Gif making processing is failed");
   });
-  connect(gif, &GifMaker::finished, gif, &GifMaker::quit);
-  connect(gif, &GifMaker::finished, gif, &GifMaker::deleteLater);
-  gif->start();
+  connect(gif_thread, &GifThread::finished, gif_thread, &GifThread::quit);
+  connect(gif_thread, &GifThread::finished, gif_thread,
+          &GifThread::deleteLater);
+  gif_thread->start();
 }
 
 }  // namespace objv

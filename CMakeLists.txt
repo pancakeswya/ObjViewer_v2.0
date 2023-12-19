@@ -67,12 +67,16 @@ add_library(ObjLoader STATIC
 
 target_link_libraries(ObjLoader Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} Controller)
 
+add_library(GifThread STATIC
+    src/concurrency/gif_thread.cc
+    src/concurrency/gif_thread.h)
+
+target_link_libraries(GifThread Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} Gif)
+
 set (QRC_FILES resources/resources.qrc)
 
 set(PROJECT_SOURCES
     src/main.cc
-    src/concurrency/gif_maker.cc
-    src/concurrency/gif_maker.h
     src/view/viewer.cc
     src/view/viewer.h
     src/view/viewer.ui
@@ -87,7 +91,7 @@ else()
         ${PROJECT_SOURCES} ${QRC_FILES})
 endif()
 
-target_link_libraries(ObjViewer_v2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ObjLoader Gif)
+target_link_libraries(ObjViewer_v2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ObjLoader GifThread)
 
 set_target_properties(ObjViewer_v2 PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

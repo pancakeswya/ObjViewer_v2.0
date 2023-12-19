@@ -90,7 +90,7 @@ Status Loader::Open(const QString& path) {
   if (stat == Status::kNoExc) {
     ProgramCreate();
     SetTextures();
-    resizeGL(width(), height());
+    SetupProjection(width(), height());
     update();
   }
   return stat;
@@ -335,13 +335,13 @@ void Loader::SetViewType(int view_type) {
   settings_.model_view_type = ViewType(view_type);
   ProgramDestroy();
   ProgramCreate();
-  resizeGL(width(), height());
+  SetupProjection(width(), height());
   update();
 }
 
 void Loader::SetProjectionType(int proj_type) {
   settings_.proj_type = ProjType(proj_type);
-  resizeGL(width(), height());
+  SetupProjection(width(), height());
   update();
 }
 
@@ -349,7 +349,7 @@ void Loader::SetShadingType(int shading_type) {
   settings_.shading_type = ShadingType(shading_type);
   ProgramDestroy();
   ProgramCreate();
-  resizeGL(width(), height());
+  SetupProjection(width(), height());
   update();
 }
 
@@ -357,7 +357,7 @@ void Loader::SetEdgeType(int type) {
   settings_.edge_type = EdgeType(type);
   ProgramDestroy();
   ProgramCreate();
-  resizeGL(width(), height());
+  SetupProjection(width(), height());
   update();
 }
 void Loader::SetVertexType(int type) {
@@ -365,17 +365,7 @@ void Loader::SetVertexType(int type) {
   update();
 }
 
-void Loader::initializeGL() {
-  InitializeShaderPaths();
-  initializeOpenGLFunctions();
-  glEnable(GL_PROGRAM_POINT_SIZE);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  ProgramCreate();
-}
-
-void Loader::resizeGL(int width, int height) {
+void Loader::SetupProjection(int width, int height) noexcept {
   if (!mesh_) {
     return;
   }
@@ -394,6 +384,18 @@ void Loader::resizeGL(int width, int height) {
   program_->setUniformValue("u_resolution", width, height);
   program_->release();
 }
+
+void Loader::initializeGL() {
+  InitializeShaderPaths();
+  initializeOpenGLFunctions();
+  glEnable(GL_PROGRAM_POINT_SIZE);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  ProgramCreate();
+}
+
+void Loader::resizeGL(int width, int height) { SetupProjection(width, height); }
 
 void Loader::paintGL() {
   glClearColor(settings_.color_bg.redF(), settings_.color_bg.greenF(),
