@@ -1,10 +1,10 @@
-#include "model/mesh_maker.h"
+#include "base/mesh_maker.h"
 
 #include <future>
 #include <map>
 #include <set>
 
-#include "model/data_parser.h"
+#include "base/data_parser.h"
 
 namespace objv::MeshMaker {
 
@@ -73,7 +73,7 @@ void DataToMesh(Data* data, Mesh* mesh) {
         combined_idx = index_map.at(idx);
       } else {
         combined_idx = next_combined_idx;
-        index_map.insert(std::make_pair(idx, combined_idx));
+        index_map.emplace(idx, combined_idx);
         unsigned int i_v = idx.fv * 3, i_n = idx.fn * 3, i_t = idx.ft * 2;
         mesh->vertices.push_back(data->v[i_v]);
         mesh->vertices.push_back(data->v[i_v + 1]);

@@ -1,5 +1,5 @@
-#ifndef SRC_MODEL_MODEL_H_
-#define SRC_MODEL_MODEL_H_
+#ifndef SRC_MODEL_MESH_MODEL_H_
+#define SRC_MODEL_MESH_MODEL_H_
 
 #include <string_view>
 
@@ -7,12 +7,12 @@
 
 namespace objv {
 
-class Model {
+class MeshModel {
  public:
-  Model() noexcept;
-  ~Model();
+  MeshModel() noexcept;
+  ~MeshModel();
   const Mesh* GetMesh() noexcept;
-  Status MeshFromFile(std::string_view path);
+  Status CreateMesh(std::string_view path);
   void Reset() noexcept;
 
  private:
@@ -21,4 +21,4 @@ class Model {
 
 }  // namespace objv
 
-#endif  // SRC_MODEL_MODEL_H_
+#endif  // SRC_MODEL_MESH_MODEL_H_

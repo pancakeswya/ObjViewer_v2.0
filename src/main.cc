@@ -1,14 +1,16 @@
 #include <QApplication>
 
 #include "controller/controller.h"
-#include "model/model.h"
-#include "view/view.h"
+#include "model/camera_model.h"
+#include "model/mesh_model.h"
+#include "view/viewer.h"
 
 int main(int argc, char *argv[]) {
-  QApplication a(argc, argv);
-  objv::Model m;
-  objv::Controller c(&m);
-  objv::View v(&c);
-  v.show();
-  return a.exec();
+  QApplication app(argc, argv);
+  objv::MeshModel mesh_model;
+  objv::CameraModel camera_model;
+  objv::Controller controller(&mesh_model, &camera_model);
+  objv::Viewer viewer(&controller);
+  viewer.show();
+  return app.exec();
 }

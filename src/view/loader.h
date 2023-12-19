@@ -93,13 +93,6 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   QOpenGLShaderProgram* program_{};
   QOpenGLVertexArrayObject vao_;
   std::array<GLint, 11> locations_{};
-  QMatrix4x4 p_mat_;
-  QMatrix4x4 v_mat_;
-  QMatrix4x4 m_mat_rotate_;
-  QMatrix4x4 m_mat_move_;
-  QMatrix4x4 m_mat_scale_;
-  QVector3D angles_{};
-  QVector3D moves_{};
   struct {
     EdgeType edge_type{};
     VertexType vertex_type{};

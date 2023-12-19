@@ -85,7 +85,7 @@ void Loader::UpdateFrame() {
 Status Loader::Open(const QString& path) {
   ProgramDestroy();
   controller_->Reset();
-  auto [mesh, stat] = controller_->MeshFromFile(path.toStdString());
+  auto [mesh, stat] = controller_->CreateMesh(path.toStdString());
   mesh_ = mesh;
   if (stat == Status::kNoExc) {
     ProgramCreate();
@@ -109,26 +109,17 @@ void Loader::ProgramDestroy() {
 }
 
 void Loader::Rotate(int angle, int axis) {
-  m_mat_rotate_.setToIdentity();
-  angles_[axis] = angle;
-  m_mat_rotate_.rotate(angles_.x(), 1.0f, 0.0f, 0.0f);
-  m_mat_rotate_.rotate(angles_.y(), 0.0f, 1.0f, 0.0f);
-  m_mat_rotate_.rotate(angles_.z(), 0.0f, 0.0f, 1.0f);
+  controller_->Rotate(angle, axis);
   update();
 }
 
 void Loader::Scale(double coef) {
-  m_mat_scale_.setToIdentity();
-  m_mat_scale_.scale(coef);
+  controller_->Zoom(coef);
   update();
 }
 
 void Loader::Move(double dist, int axis) {
-  moves_[axis] = dist;
-  m_mat_move_.setToIdentity();
-  m_mat_move_.translate(moves_.x(), 0.0f, 0.0f);
-  m_mat_move_.translate(0.0f, moves_.y(), 0.0f);
-  m_mat_move_.translate(0.0f, 0.0f, moves_.z());
+  controller_->Move(dist, axis);
   update();
 }
 
@@ -388,29 +379,18 @@ void Loader::resizeGL(int width, int height) {
   if (!mesh_) {
     return;
   }
-  p_mat_.setToIdentity();
-  v_mat_.setToIdentity();
-  GLfloat size_x = std::abs(mesh_->min_vertex[0] - mesh_->max_vertex[0]);
-  GLfloat size_y = std::abs(mesh_->min_vertex[1] - mesh_->max_vertex[1]);
-  GLfloat size_z = std::abs(mesh_->min_vertex[2] - mesh_->max_vertex[2]);
-  GLfloat mid_size_x = (mesh_->min_vertex[0] + mesh_->max_vertex[0]) / 2.0f;
-  GLfloat mid_size_y = (mesh_->min_vertex[1] + mesh_->max_vertex[1]) / 2.0f;
-  GLfloat mid_size_z = (mesh_->min_vertex[2] + mesh_->max_vertex[2]) / 2.0f;
-  GLfloat max_size = std::max(std::max(size_x, size_y), size_z);
-  GLfloat aspectratio = GLfloat(width) / GLfloat(height);
-  QVector3D center(mid_size_x, mid_size_y, mid_size_z);
+  controller_->SetPerspective(width, height, mesh_->min_vertex,
+                              mesh_->max_vertex);
   if (settings_.proj_type == ProjType::kCentral) {
-    v_mat_.lookAt(QVector3D(center.x(), center.y(), center.z() + max_size),
-                  center, QVector3D(0.0f, 1.0f, 0.0f));
-    p_mat_.perspective(100.0f, aspectratio, 0.01f * max_size,
-                       100.0f * max_size);
+    controller_->SetCentralProjection();
   } else {
-    p_mat_.ortho(-max_size * aspectratio, max_size * aspectratio, -max_size,
-                 max_size, -100.0f * max_size, 100.0f * max_size);
+    controller_->SetParallelProjection();
   }
+  auto center = controller_->GetCenterCoords();
+  float max_dist = controller_->GetMaxDistance();
   program_->setUniformValue(
       "u_light_pos",
-      QVector3D(center.x(), center.y(), center.z() + max_size * 3));
+      QVector3D(center.x(), center.y(), center.z() + max_dist * 3));
   program_->setUniformValue("u_resolution", width, height);
   program_->release();
 }
@@ -426,8 +406,9 @@ void Loader::paintGL() {
 
   program_->bind();
   vao_.bind();
-  QMatrix4x4 vm = v_mat_ * m_mat_move_ * m_mat_rotate_ * m_mat_scale_;
-  glUniformMatrix4fv(locations_[kMvpU], 1, GL_FALSE, (p_mat_ * vm).constData());
+  QMatrix4x4 vm = controller_->GetViewMatrix() * controller_->GetModelMatrix();
+  QMatrix4x4 pm = controller_->GetProjectionMatrix();
+  glUniformMatrix4fv(locations_[kMvpU], 1, GL_FALSE, (pm * vm).constData());
   glUniformMatrix4fv(locations_[kMvU], 1, GL_FALSE, vm.constData());
   glUniformMatrix4fv(locations_[kMatNormalU], 1, GL_FALSE,
                      vm.inverted().transposed().constData());

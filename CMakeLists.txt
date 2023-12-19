@@ -29,19 +29,33 @@ add_library(Gif STATIC
     src/third_party/gif.h
     src/third_party/gif.c)
 
-add_library(Model STATIC
-    src/model/data_parser.h
-    src/model/data_parser.cc
-    src/model/mesh_maker.h
-    src/model/mesh_maker.cc
-    src/model/model.cc
-    src/model/model.h)
+add_library(DataParser STATIC
+    src/base/data_parser.cc
+    src/base/data_parser.h)
+
+add_library(MeshMaker STATIC
+    src/base/mesh_maker.cc
+    src/base/mesh_maker.cc)
+
+target_link_libraries(MeshMaker DataParser)
+
+add_library(MeshModel STATIC
+    src/model/mesh_model.cc
+    src/model/mesh_model.h)
+
+target_link_libraries(MeshModel MeshMaker)
+
+add_library(CameraModel STATIC
+    src/model/camera_model.cc
+    src/model/camera_model.cc)
+
+target_link_libraries(CameraModel Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE})
 
 add_library(Controller STATIC
     src/controller/controller.cc
     src/controller/controller.h)
 
-target_link_libraries(Controller Model)
+target_link_libraries(Controller MeshModel CameraModel)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -59,9 +73,9 @@ set(PROJECT_SOURCES
     src/main.cc
     src/concurrency/gif_maker.cc
     src/concurrency/gif_maker.h
-    src/view/view.cc
-    src/view/view.h
-    src/view/view.ui
+    src/view/viewer.cc
+    src/view/viewer.h
+    src/view/viewer.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

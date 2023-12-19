@@ -1,27 +1,27 @@
-#ifndef SRC_VIEW_VIEW_H_
-#define SRC_VIEW_VIEW_H_
+#ifndef SRC_VIEW_VIEWER_H_
+#define SRC_VIEW_VIEWER_H_
 
 #include <QMainWindow>
 #include <QSettings>
 
-#include "controller/controller.h"
 #include "base/data_types.h"
+#include "controller/controller.h"
 
 namespace objv {
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class View;
+class Viewer;
 }
 QT_END_NAMESPACE
 
-class View : public QMainWindow {
+class Viewer : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit View(Controller* controller);
-  explicit View(QWidget* parent = nullptr);
-  ~View() override;
+  explicit Viewer(Controller* controller);
+  explicit Viewer(QWidget* parent = nullptr);
+  ~Viewer() override;
 
  protected:
   static void SetTheme();
@@ -43,10 +43,10 @@ class View : public QMainWindow {
   void OnPushButtonGifClicked();
 
  private:
-  Ui::View* ui_;
+  Ui::Viewer* ui_;
   QSettings settings_;
 };
 
 }  // namespace objv
 
-#endif  // SRC_VIEW_VIEW_H_
+#endif  // SRC_VIEW_VIEWER_H_
