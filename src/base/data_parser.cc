@@ -10,6 +10,12 @@ namespace objv::DataParser {
 
 namespace {
 
+enum VertexType {
+  kVertex = ' ',
+  kNormal = 'n',
+  kTexture = 't',
+};
+
 constexpr size_t kBufferSize = 65536;
 
 Status stat;
@@ -250,13 +256,13 @@ void ProcessPolygon(Data& data, const std::vector<Index>& raw_ind,
   }
 }
 
-const char* ParseVertex(const char* ptr, std::vector<float>& array, float max[],
+const char* ParseVertex(const char* ptr, std::vector<float>& verts, float max[],
                         float min[]) {
   float vert;
   char* end = nullptr;
   char type = *ptr++;
   // texture has 2d coords everything else 3
-  int vert_max = (type == 't') ? 2 : 3;
+  int vert_max = (type == kTexture) ? 2 : 3;
   for (int i = 0; i < vert_max; ++i) {
     vert = std::strtof(ptr, &end);
     if (end == ptr) {
@@ -265,11 +271,11 @@ const char* ParseVertex(const char* ptr, std::vector<float>& array, float max[],
     }
     // if it is a position get max
     // min value by axis
-    if (type == ' ') {
+    if (type == kVertex) {
       max[i] = std::max(vert, max[i]);
       min[i] = std::min(vert, min[i]);
     }
-    array.push_back(vert);
+    verts.push_back(vert);
     ptr = SkipSpace(end);
   }
   return ptr;
@@ -359,8 +365,9 @@ const char* ParseMtl(const char* p, Data& data) {
     bool found_d = false;
 
     long int bytes = FileSize(mtl_file);
-    auto buf = new char[bytes + 1];
-    unsigned int read = mtl_file.readsome(buf, bytes);
+    auto buf = new char[bytes + 1]{};
+    mtl_file.read(buf, bytes);
+    unsigned int read = mtl_file.gcount();
     buf[read] = '\0';
 
     const char* ptr = buf;
@@ -516,17 +523,17 @@ void ReadFile(std::string_view path, Data& data) {
     p.remove_filename();
     data.dir_path = p.generic_string();
   }
-  auto buffer = new char[2 * kBufferSize];
+  auto buffer = new char[2 * kBufferSize]{};
   start = buffer;
   for (;;) {
-    read = file.readsome(start, kBufferSize);
+    file.read(start, kBufferSize);
+    read = file.gcount();
     if (!read && start == buffer) {
       break;
     }
-    if (read < kBufferSize) {
-      if (!read || start[read - 1] != '\n') {
-        start[read++] = '\n';
-      }
+    if (!read ||
+        (read < kBufferSize && start[read - 1] != '\n')) {
+      start[read++] = '\n';
     }
     end = start + read;
     if (end == buffer) {
