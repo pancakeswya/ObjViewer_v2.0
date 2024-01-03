@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <clocale>
 
 #include "controller/controller.h"
 #include "model/camera_model.h"
@@ -6,6 +7,7 @@
 #include "view/viewer.h"
 
 int main(int argc, char *argv[]) {
+  std::setlocale(LC_NUMERIC, "C");
   QApplication app(argc, argv);
   objv::MeshModel mesh_model;
   objv::CameraModel camera_model;

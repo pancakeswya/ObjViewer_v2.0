@@ -3,17 +3,31 @@
         <file>../images/ObjViewer_icon.png</file>
         <file>../images/left_arrow.png</file>
         <file>../images/right_arrow.png</file>
+
         <file>../shaders/wireframe.frag</file>
         <file>../shaders/wireframe.vert</file>
         <file>../shaders/wireframe_dashed.frag</file>
         <file>../shaders/wireframe_dashed.vert</file>
-	<file>../shaders/solid_flat.frag</file>
+	    <file>../shaders/solid_flat.frag</file>
         <file>../shaders/solid.frag</file>
         <file>../shaders/solid.vert</file>
         <file>../shaders/texture_no_normals.frag</file>
         <file>../shaders/texture_no_normals.vert</file>
-	<file>../shaders/texture_flat.frag</file>
+	    <file>../shaders/texture_flat.frag</file>
         <file>../shaders/texture.frag</file>
         <file>../shaders/texture.vert</file>
+
+        <file>../shaders/macos/wireframe.frag</file>
+        <file>../shaders/macos/wireframe.vert</file>
+        <file>../shaders/macos/wireframe_dashed.frag</file>
+        <file>../shaders/macos/wireframe_dashed.vert</file>
+        <file>../shaders/macos/solid_flat.frag</file>
+        <file>../shaders/macos/solid.frag</file>
+        <file>../shaders/macos/solid.vert</file>
+        <file>../shaders/macos/texture_no_normals.frag</file>
+        <file>../shaders/macos/texture_no_normals.vert</file>
+        <file>../shaders/macos/texture_flat.frag</file>
+        <file>../shaders/macos/texture.frag</file>
+        <file>../shaders/macos/texture.vert</file>
     </qresource>
 </RCC>

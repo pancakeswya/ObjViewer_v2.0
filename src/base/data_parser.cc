@@ -531,8 +531,7 @@ void ReadFile(std::string_view path, Data& data) {
     if (!read && start == buffer) {
       break;
     }
-    if (!read ||
-        (read < kBufferSize && start[read - 1] != '\n')) {
+    if (!read || (read < kBufferSize && start[read - 1] != '\n')) {
       start[read++] = '\n';
     }
     end = start + read;

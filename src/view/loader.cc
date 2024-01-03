@@ -28,16 +28,17 @@ enum LocationType {
   kOpacityU
 };
 
-void LoadTexture(QOpenGLTexture& texture, std::string_view path) {
+void LoadTexture(QOpenGLTexture& texture, const std::string& path) {
   texture.destroy();
   QImage tex_image;
   if (!path.empty()) {
-    tex_image.load(path.data());
+    tex_image.load(path.c_str());
   }
   if (tex_image.isNull()) {
+    constexpr int w = 1, h = 1;
     // make it default color texture
-    QImage image(1, 1, QImage::Format_RGB32);
-    image.fill(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
+    QImage image(w, h, QImage::Format_RGB32);
+    image.fill(Qt::lightGray);
     tex_image = std::move(image);
   }
   texture.setData(tex_image.mirrored());
@@ -70,8 +71,12 @@ Loader::Loader(QWidget* parent)
       settings_{.proj_type = ProjType::kParallel,
                 .vertex_size = 1.0f,
                 .edge_size = 1.0f,
-                .color_line{0.7f, 0.7f, 0.7f},
-                .color_point{0.7f, 0.7f, 0.7f},
+                .color_line{static_cast<float>(QColor(Qt::lightGray).redF()),
+                            static_cast<float>(QColor(Qt::lightGray).greenF()),
+                            static_cast<float>(QColor(Qt::lightGray).blueF())},
+                .color_point{static_cast<float>(QColor(Qt::lightGray).redF()),
+                             static_cast<float>(QColor(Qt::lightGray).greenF()),
+                             static_cast<float>(QColor(Qt::lightGray).blueF())},
                 .color_bg{Qt::black}} {}
 
 Loader::~Loader() { ProgramDestroy(); }
@@ -124,22 +129,31 @@ void Loader::Move(double dist, int axis) {
 }
 
 void Loader::InitializeShaderPaths() {
-  map_texture_[true][ShadingType::kSmooth] = {":/shaders/texture.vert",
-                                              ":/shaders/texture.frag"};
-  map_texture_[true][ShadingType::kFlat] = {":/shaders/texture.vert",
-                                            ":/shaders/texture_flat.frag"};
+  const std::string shader_dir =
+      ":/shaders/"
+#ifdef __APPLE__
+      "macos/";
+#else
+      "";
+#endif
+  map_texture_[true][ShadingType::kSmooth] = {shader_dir + "texture.vert",
+                                              shader_dir + "texture.frag"};
+  map_texture_[true][ShadingType::kFlat] = {shader_dir + "texture.vert",
+                                            shader_dir + "texture_flat.frag"};
   map_texture_[false][ShadingType::kSmooth] = {
-      ":/shaders/texture_no_normals.vert", ":/shaders/texture_no_normals.frag"};
+      shader_dir + "texture_no_normals.vert",
+      shader_dir + "texture_no_normals.frag"};
   map_texture_[false][ShadingType::kFlat] = {
-      ":/shaders/texture_no_normals.vert", ":/shaders/texture_no_normals.frag"};
-  map_solid_[ShadingType::kSmooth] = {":/shaders/solid.vert",
-                                      ":/shaders/solid.frag"};
-  map_solid_[ShadingType::kFlat] = {":/shaders/solid.vert",
-                                    ":/shaders/solid_flat.frag"};
-  map_wireframe_[EdgeType::kSolid] = {":/shaders/wireframe.vert",
-                                      ":/shaders/wireframe.frag"};
-  map_wireframe_[EdgeType::kDashed] = {":/shaders/wireframe_dashed.vert",
-                                       ":/shaders/wireframe_dashed.frag"};
+      shader_dir + "texture_no_normals.vert",
+      shader_dir + "texture_no_normals.frag"};
+  map_solid_[ShadingType::kSmooth] = {shader_dir + "solid.vert",
+                                      shader_dir + "solid.frag"};
+  map_solid_[ShadingType::kFlat] = {shader_dir + "solid.vert",
+                                    shader_dir + "solid_flat.frag"};
+  map_wireframe_[EdgeType::kSolid] = {shader_dir + "wireframe.vert",
+                                      shader_dir + "wireframe.frag"};
+  map_wireframe_[EdgeType::kDashed] = {shader_dir + "wireframe_dashed.vert",
+                                       shader_dir + "wireframe_dashed.frag"};
 }
 
 Loader::ShaderPaths Loader::GetShaderPaths() {
@@ -408,8 +422,9 @@ void Loader::paintGL() {
 
   program_->bind();
   vao_.bind();
-  QMatrix4x4 vm = controller_->GetViewMatrix() * controller_->GetModelMatrix();
-  QMatrix4x4 pm = controller_->GetProjectionMatrix();
+  const QMatrix4x4 vm =
+      controller_->GetViewMatrix() * controller_->GetModelMatrix();
+  const QMatrix4x4 pm = controller_->GetProjectionMatrix();
   glUniformMatrix4fv(locations_[kMvpU], 1, GL_FALSE, (pm * vm).constData());
   glUniformMatrix4fv(locations_[kMvU], 1, GL_FALSE, vm.constData());
   glUniformMatrix4fv(locations_[kMatNormalU], 1, GL_FALSE,
@@ -420,6 +435,7 @@ void Loader::paintGL() {
 
   if (settings_.model_view_type != ViewType::kWireframe &&
       (mesh_->has_normals || mesh_->has_textures)) {
+    // draw surface
     size_t prev_offset = 0;
     for (const UseMtl& usemtl : mesh_->usemtl) {
       program_->setUniformValue(locations_[kAmbientU],
@@ -440,7 +456,8 @@ void Loader::paintGL() {
         maps_[usemtl.index].specular.bind(2);
       }
       glDrawElements(GL_TRIANGLES, usemtl.offset_fv - prev_offset,
-                     GL_UNSIGNED_INT, (void*)(prev_offset * sizeof(GLuint)));
+                     GL_UNSIGNED_INT,
+                     reinterpret_cast<void*>(prev_offset * sizeof(GLuint)));
 
       prev_offset = usemtl.offset_fv;
       if (settings_.model_view_type == ViewType::kMaterial) {
@@ -450,6 +467,7 @@ void Loader::paintGL() {
       }
     }
   } else {
+    // draw lines
     glDrawElements(GL_LINES, mesh_->edges.size(), GL_UNSIGNED_INT, nullptr);
     if (settings_.vertex_type != VertexType::kNone) {
       program_->setUniformValue(locations_[kColorU], settings_.color_point);

@@ -8,7 +8,9 @@
 #include <QOpenGLWidget>
 #include <array>
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <utility>
 
 #include "controller/controller.h"
 
@@ -42,7 +44,6 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   QColor GetEdgeColor() noexcept;
   QColor GetBgColor() noexcept;
   const std::vector<NewMtl>& GetMaterialData() noexcept;
-  void SetTextures();
   void ResetTexture(unsigned int index_mtl, unsigned int map_type,
                     const QString& path = "");
   void SaveUvMap(unsigned int index_mtl, std::string_view path_texture,
@@ -65,7 +66,7 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
  private:
   struct Maps;
 
-  using ShaderPaths = std::pair<std::string_view, std::string_view>;
+  using ShaderPaths = std::pair<std::string, std::string>;
   using TextureShaderPaths =
       std::unordered_map<bool, std::unordered_map<ShadingType, ShaderPaths>>;
   using SolidShaderPaths = std::unordered_map<ShadingType, ShaderPaths>;
@@ -77,6 +78,7 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
 
   static void InitializeShaderPaths();
   ShaderPaths GetShaderPaths();
+  void SetTextures();
 
   void paintGL() override;
   void initializeGL() override;

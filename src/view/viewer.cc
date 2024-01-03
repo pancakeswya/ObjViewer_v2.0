@@ -172,17 +172,17 @@ void ClearLayout(QLayout* layout) {
 }  // namespace
 
 void Viewer::LoadMaterial(const std::vector<NewMtl>& mtl) {
-  auto* layout = ui_->grid_layout_material;
+  QGridLayout* layout = ui_->grid_layout_material;
   ClearLayout(layout);
   ui_->scroll_area_maps->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   ui_->scroll_area_maps->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   // set new widgets
-  QStringList mtl_ftr = {
+  const QStringList mtl_ftr = {
       "Ambient: ", "Diffuse: ", "Specular: ", "Emmission: ", "Opacity: ",
       "Shiness: ", "Map_Ka: ",  "Map_Kd: ",   "Map_Ks: "};
-  for (unsigned int i = 0; i < mtl.size(); ++i) {
-    std::array mtl_val = {mtl[i].Ka, mtl[i].Kd, mtl[i].Ks,
-                          mtl[i].Ke, &mtl[i].d, &mtl[i].Ns};
+  for (size_t i = 0; i < mtl.size(); ++i) {
+    const std::array mtl_val = {mtl[i].Ka, mtl[i].Kd, mtl[i].Ks,
+                                mtl[i].Ke, &mtl[i].d, &mtl[i].Ns};
     auto layout_mtl = new QGridLayout();
     layout->addLayout(layout_mtl, i, 0);
 
@@ -198,7 +198,7 @@ void Viewer::LoadMaterial(const std::vector<NewMtl>& mtl) {
     }
     label_name->setMargin(label_name->margin() + 2);
     layout_mtl->addWidget(label_name, 0, 0, 1, 2);
-    for (unsigned int j = 0; j < 6; ++j) {
+    for (int j = 0; j < 6; ++j) {
       QString test_k = mtl_ftr[j] + QString::number(mtl_val[j][0]);
       if (j < 4) {
         test_k += " " + QString::number(mtl_val[j][1]) + " " +
@@ -213,7 +213,7 @@ void Viewer::LoadMaterial(const std::vector<NewMtl>& mtl) {
     label_maps->setMargin(label_maps->margin() + 4);
     layout_mtl->addWidget(label_maps, 7, 0, 1, 2);
     std::array map_path = {mtl[i].map_ka, mtl[i].map_kd, mtl[i].map_ks};
-    for (unsigned int j = 8, k = 0; j < 17; ++j) {
+    for (int j = 8, k = 0; j < 17; ++j) {
       QString has_texture = (map_path[k].empty()) ? "No texture" : "Textured";
 
       auto label_map = new QLabel(mtl_ftr[k++]);
@@ -285,21 +285,21 @@ void Viewer::OnPushButtonOpenFileClicked() {
 }
 
 void Viewer::OnPushButtonBgColorClicked() {
-  QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
+  QColor color = QColorDialog::getColor(Qt::black);
   if (color.isValid()) {
     ui_->obj_loader->SetBgColor(color);
   }
 }
 
 void Viewer::OnPushButtonEdgeColorClicked() {
-  QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
+  QColor color = QColorDialog::getColor(Qt::black);
   if (color.isValid()) {
     ui_->obj_loader->SetEdgeColor(color);
   }
 }
 
 void Viewer::OnPushButtonVertexColorClicked() {
-  QColor color = QColorDialog::getColor(QColor(0.0, 0.0, 0.0, 0));
+  QColor color = QColorDialog::getColor(Qt::black);
   if (color.isValid()) {
     ui_->obj_loader->SetVertexColor(color);
   }
@@ -370,10 +370,10 @@ void Viewer::OnPushButtonScreenClicked() {
 void Viewer::OnPushButtonResetClicked() {
   ui_->combo_box_projection->setCurrentIndex(0);
   ui_->combo_box_edge_type->setCurrentIndex(0);
-  ui_->obj_loader->SetEdgeColor(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
+  ui_->obj_loader->SetEdgeColor(Qt::lightGray);
   ui_->spin_box_edge_size->setValue(1);
   ui_->combo_box_type_vertex->setCurrentIndex(0);
-  ui_->obj_loader->SetVertexColor(QColor::fromRgbF(0.7f, 0.7f, 0.7f));
+  ui_->obj_loader->SetVertexColor(Qt::lightGray);
   ui_->spin_box_vertex_size->setValue(1);
   ui_->obj_loader->SetBgColor(QColor(Qt::black));
 }
