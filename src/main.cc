@@ -8,8 +8,8 @@
 #include "view/viewer.h"
 
 int main(int argc, char *argv[]) {
-  std::setlocale(LC_NUMERIC, "C");
   QApplication app(argc, argv);
+  std::setlocale(LC_NUMERIC, "C");
 
   objv::MeshModel mesh_model;
   objv::CameraModel camera_model;
