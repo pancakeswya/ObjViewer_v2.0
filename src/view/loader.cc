@@ -62,7 +62,12 @@ inline Loader::Maps::Maps()
       diffuse(QOpenGLTexture::Target2D),
       specular(QOpenGLTexture::Target2D) {}
 
-Loader::Loader(Controller* controller) : Loader() { controller_ = controller; }
+Loader::Loader(MeshController* mesh_controller,
+               CameraController* camera_controller)
+    : Loader() {
+  mesh_controller_ = mesh_controller;
+  camera_controller_ = camera_controller;
+}
 
 Loader::Loader(QWidget* parent)
     : QOpenGLWidget(parent),
@@ -89,8 +94,8 @@ void Loader::UpdateFrame() {
 
 Status Loader::Open(const QString& path) {
   ProgramDestroy();
-  controller_->Reset();
-  auto [mesh, stat] = controller_->CreateMesh(path.toStdString());
+  mesh_controller_->Reset();
+  auto [mesh, stat] = mesh_controller_->CreateMesh(path.toStdString());
   mesh_ = mesh;
   if (stat == Status::kNoExc) {
     ProgramCreate();
@@ -101,8 +106,12 @@ Status Loader::Open(const QString& path) {
   return stat;
 }
 
-void Loader::SetController(Controller* controller) noexcept {
-  controller_ = controller;
+void Loader::SetMeshController(MeshController* controller) noexcept {
+  mesh_controller_ = controller;
+}
+
+void Loader::SetCameraController(CameraController* controller) noexcept {
+  camera_controller_ = controller;
 }
 
 void Loader::ProgramDestroy() {
@@ -114,17 +123,17 @@ void Loader::ProgramDestroy() {
 }
 
 void Loader::Rotate(int angle, int axis) {
-  controller_->Rotate(angle, axis);
+  camera_controller_->Rotate(angle, axis);
   update();
 }
 
 void Loader::Scale(double coef) {
-  controller_->Zoom(coef);
+  camera_controller_->Zoom(coef);
   update();
 }
 
 void Loader::Move(double dist, int axis) {
-  controller_->Move(dist, axis);
+  camera_controller_->Move(dist, axis);
   update();
 }
 
@@ -383,18 +392,17 @@ void Loader::SetupProjection(int width, int height) noexcept {
   if (!mesh_) {
     return;
   }
-  controller_->SetPerspective(width, height, mesh_->min_vertex,
-                              mesh_->max_vertex);
+  camera_controller_->SetPerspective(width, height, mesh_->min_vertex,
+                                     mesh_->max_vertex);
   if (settings_.proj_type == ProjType::kCentral) {
-    controller_->SetCentralProjection();
+    camera_controller_->SetCentralProjection();
   } else {
-    controller_->SetParallelProjection();
+    camera_controller_->SetParallelProjection();
   }
-  auto center = controller_->GetCenterCoords();
-  float max_dist = controller_->GetMaxDistance();
+  auto center = camera_controller_->GetCenterCoords();
+  float max_dist = camera_controller_->GetMaxDistance();
   program_->setUniformValue(
-      "u_light_pos",
-      QVector3D(center.x(), center.y(), center.z() + max_dist * 3));
+      "u_light_pos", QVector3D(center[0], center[1], center[2] + max_dist * 3));
   program_->setUniformValue("u_resolution", width, height);
   program_->release();
 }
@@ -422,13 +430,16 @@ void Loader::paintGL() {
 
   program_->bind();
   vao_.bind();
-  const QMatrix4x4 vm =
-      controller_->GetViewMatrix() * controller_->GetModelMatrix();
-  const QMatrix4x4 pm = controller_->GetProjectionMatrix();
-  glUniformMatrix4fv(locations_[kMvpU], 1, GL_FALSE, (pm * vm).constData());
-  glUniformMatrix4fv(locations_[kMvU], 1, GL_FALSE, vm.constData());
-  glUniformMatrix4fv(locations_[kMatNormalU], 1, GL_FALSE,
-                     vm.inverted().transposed().constData());
+
+  camera_controller_->CalculateModelViewMatrix();
+
+  glUniformMatrix4fv(locations_[kMvU], 1, GL_FALSE,
+                     camera_controller_->GetModelViewMatrix().data());
+  glUniformMatrix4fv(locations_[kMvpU], 1, GL_FALSE,
+                     camera_controller_->GetModelViewProjectionMatrix().data());
+  glUniformMatrix4fv(
+      locations_[kMatNormalU], 1, GL_FALSE,
+      camera_controller_->GetModelViewMatrixInvertedTransposed().data());
 
   program_->setUniformValue(locations_[kColorU], settings_.color_line);
   program_->setUniformValue(locations_[kVertexSizeU], settings_.vertex_size);

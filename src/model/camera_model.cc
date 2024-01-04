@@ -6,8 +6,8 @@
 namespace objv {
 
 void CameraModel::SetPerspective(int width, int height,
-                                 const float min_vertex[3],
-                                 const float max_vertex[3]) noexcept {
+                                 const float (&min_vertex)[3],
+                                 const float (&max_vertex)[3]) noexcept {
   p_mat_.setToIdentity();
   v_mat_.setToIdentity();
   float size_x = std::abs(min_vertex[0] - max_vertex[0]);
@@ -33,17 +33,30 @@ void CameraModel::SetParallelProjection() noexcept {
                max_size_, -100.0f * max_size_, 100.0f * max_size_);
 }
 
-float CameraModel::GetMaxDistance() noexcept { return max_size_; }
-
-QVector3D CameraModel::GetCenterCoords() noexcept { return center_; }
-
-QMatrix4x4 CameraModel::GetModelMatrix() noexcept {
-  return m_mat_move_ * m_mat_rotate_ * m_mat_zoom_;
+void CameraModel::CalculateModelViewMatrix() noexcept {
+  mv_mat_ = v_mat_ * (m_mat_move_ * m_mat_rotate_ * m_mat_zoom_);
 }
 
-QMatrix4x4 CameraModel::GetViewMatrix() noexcept { return v_mat_; }
+float CameraModel::GetMaxDistance() noexcept { return max_size_; }
 
-QMatrix4x4 CameraModel::GetProjectionMatrix() noexcept { return p_mat_; }
+std::vector<float> CameraModel::GetCenterCoords() noexcept {
+  return {center_.x(), center_.y(), center_.z()};
+}
+
+std::vector<float> CameraModel::GetModelViewMatrix() noexcept {
+  return {mv_mat_.data(), mv_mat_.data() + 16};
+}
+
+std::vector<float> CameraModel::GetModelViewProjectionMatrix() noexcept {
+  const QMatrix4x4 mvp = p_mat_ * mv_mat_;
+  return {mvp.data(), mvp.data() + 16};
+}
+
+std::vector<float>
+CameraModel::GetModelViewMatrixInvertedTransposed() noexcept {
+  const QMatrix4x4 mv_it = mv_mat_.inverted().transposed();
+  return {mv_it.data(), mv_it.data() + 16};
+}
 
 void CameraModel::Rotate(int angle, int axis) noexcept {
   angles_[axis] = angle;

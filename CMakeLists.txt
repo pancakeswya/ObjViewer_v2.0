@@ -51,11 +51,17 @@ add_library(CameraModel STATIC
 
 target_link_libraries(CameraModel Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE})
 
-add_library(Controller STATIC
-    src/controller/controller.cc
-    src/controller/controller.h)
+add_library(MeshController STATIC
+    src/controller/mesh_controller.cc
+    src/controller/mesh_controller.h)
 
-target_link_libraries(Controller MeshModel CameraModel)
+target_link_libraries(MeshController MeshModel)
+
+add_library(CameraController STATIC
+    src/controller/camera_controller.cc
+    src/controller/camera_controller.h)
+
+target_link_libraries(CameraController CameraModel)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -65,7 +71,7 @@ add_library(ObjLoader STATIC
     src/view/loader.cc
     src/view/loader.h)
 
-target_link_libraries(ObjLoader Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} Controller)
+target_link_libraries(ObjLoader Qt${QT_VERSION_MAJOR}::${QT_OPENGL_WIDGETS_MODULE} MeshController CameraController)
 
 add_library(GifThread STATIC
     src/concurrency/gif_thread.cc

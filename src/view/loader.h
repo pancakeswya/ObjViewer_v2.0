@@ -12,7 +12,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include "controller/controller.h"
+#include "controller/camera_controller.h"
+#include "controller/mesh_controller.h"
 
 namespace objv {
 
@@ -29,11 +30,13 @@ enum class VertexType : short int { kNone, kQuad, kCircle };
 class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   Q_OBJECT
  public:
-  explicit Loader(Controller* controller);
+  explicit Loader(MeshController* mesh_controller,
+                  CameraController* camera_controller);
   explicit Loader(QWidget* parent = nullptr);
   ~Loader() override;
   Status Open(const QString& path);
-  void SetController(Controller* controller) noexcept;
+  void SetMeshController(MeshController* controller) noexcept;
+  void SetCameraController(CameraController* controller) noexcept;
   void SetVertexColor(const QColor& color_point);
   void SetEdgeColor(const QColor& color_line);
   void SetBgColor(const QColor& color_bg);
@@ -89,7 +92,8 @@ class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
   void SetupProjection(int width, int height) noexcept;
 
   const Mesh* mesh_{};
-  Controller* controller_{};
+  MeshController* mesh_controller_{};
+  CameraController* camera_controller_{};
   std::unique_ptr<Maps[]> maps_{};
   QOpenGLBuffer vbo_;
   QOpenGLBuffer ebo_;

@@ -12,8 +12,11 @@
 
 namespace objv {
 
-Viewer::Viewer(Controller* controller) : Viewer() {
-  ui_->obj_loader->SetController(controller);
+Viewer::Viewer(MeshController* mesh_controller,
+               CameraController* camera_controller)
+    : Viewer() {
+  ui_->obj_loader->SetMeshController(mesh_controller);
+  ui_->obj_loader->SetCameraController(camera_controller);
 }
 
 Viewer::Viewer(QWidget* parent)

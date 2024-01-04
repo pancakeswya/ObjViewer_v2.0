@@ -5,7 +5,8 @@
 #include <QSettings>
 
 #include "base/data_types.h"
-#include "controller/controller.h"
+#include "controller/camera_controller.h"
+#include "controller/mesh_controller.h"
 
 namespace objv {
 
@@ -19,7 +20,8 @@ class Viewer : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit Viewer(Controller* controller);
+  explicit Viewer(MeshController* mesh_controller,
+                  CameraController* camera_controller);
   explicit Viewer(QWidget* parent = nullptr);
   ~Viewer() override;
 
