@@ -4,9 +4,9 @@ attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute vec2 a_tex_coords;
 
-out vec3 view_pos;
-out vec3 normal;
-out vec2 tex_coords;
+varying vec3 view_pos;
+varying vec3 normal;
+varying vec2 tex_coords;
 
 uniform mat4 u_mvp;
 uniform mat4 u_mv;

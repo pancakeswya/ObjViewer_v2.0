@@ -3,7 +3,7 @@
 attribute vec3 a_position;
 attribute vec2 a_tex_coords;
 
-out vec2 tex_coords;
+varying vec2 tex_coords;
 
 uniform mat4 u_mvp;
 

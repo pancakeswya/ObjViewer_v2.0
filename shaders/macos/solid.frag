@@ -1,7 +1,7 @@
 #version 120
 
-in vec3 view_pos;
-in vec3 normal;
+varying vec3 view_pos;
+varying vec3 normal;
 
 uniform vec3 u_ambient;
 uniform vec3 u_diffuse;

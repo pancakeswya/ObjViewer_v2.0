@@ -3,8 +3,8 @@
 attribute vec3 a_position;
 attribute vec3 a_normal;
 
-out vec3 view_pos;
-out vec3 normal;
+varying vec3 view_pos;
+varying vec3 normal;
 
 uniform mat4 u_mvp;
 uniform mat4 u_mv;

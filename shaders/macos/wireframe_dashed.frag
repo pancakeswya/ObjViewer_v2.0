@@ -1,7 +1,7 @@
 #version 120
 
-flat in vec3 start_pos;
-in vec3 vert_pos;
+flat varying vec3 start_pos;
+varying vec3 vert_pos;
 
 uniform vec2  u_resolution;
 uniform vec3 u_color;

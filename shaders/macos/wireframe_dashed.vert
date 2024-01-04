@@ -2,8 +2,8 @@
 
 attribute vec3 a_position;
 
-flat out vec3 start_pos;
-out vec3 vert_pos;
+flat varying vec3 start_pos;
+varying vec3 vert_pos;
 
 uniform mat4 u_mvp;
 uniform float u_vertex_size;
