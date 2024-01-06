@@ -478,8 +478,19 @@ void Loader::paintGL() {
       }
     }
   } else {
+#ifdef __APPLE__
+    if (settings_.edge_type == EdgeType::kDashed) {
+      glEnable(GL_LINE_STIPPLE);
+      glLineStipple(2, 0x00F0);
+    }
+#endif
     // draw lines
     glDrawElements(GL_LINES, mesh_->edges.size(), GL_UNSIGNED_INT, nullptr);
+#ifdef __APPLE__
+    if (settings_.edge_type == EdgeType::kDashed) {
+      glDisable(GL_LINE_STIPPLE);
+    }
+#endif
     if (settings_.vertex_type != VertexType::kNone) {
       program_->setUniformValue(locations_[kColorU], settings_.color_point);
       if (settings_.vertex_type == VertexType::kCircle) {

@@ -21,6 +21,11 @@ if(QT_VERSION_MAJOR EQUAL 5)
     endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    add_compile_definitions(GL_SILENCE_DEPRECATION)
+endif()
+
+
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets ${QT_OPENGL_WIDGETS_MODULE} REQUIRED)
 
 include_directories("src")

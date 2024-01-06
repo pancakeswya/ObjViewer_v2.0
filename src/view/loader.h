@@ -2,7 +2,11 @@
 #define SRC_VIEWER_LOADER_LOADER_H_
 
 #include <QOpenGLBuffer>
+#ifdef __APPLE__
+#include <QOpenGLFunctions_2_1>
+#else
 #include <QOpenGLFunctions>
+#endif
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
@@ -27,7 +31,12 @@ enum class EdgeType : bool { kSolid, kDashed };
 
 enum class VertexType : short int { kNone, kQuad, kCircle };
 
-class Loader final : public QOpenGLWidget, protected QOpenGLFunctions {
+class Loader final : public QOpenGLWidget,
+#ifdef __APPLE__
+                     protected QOpenGLFunctions_2_1 {
+#else
+                     protected QOpenGLFunctions {
+#endif
   Q_OBJECT
  public:
   explicit Loader(MeshController* mesh_controller,

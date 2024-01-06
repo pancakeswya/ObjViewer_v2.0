@@ -288,21 +288,21 @@ void Viewer::OnPushButtonOpenFileClicked() {
 }
 
 void Viewer::OnPushButtonBgColorClicked() {
-  QColor color = QColorDialog::getColor(Qt::black);
+  QColor color = QColorDialog::getColor();
   if (color.isValid()) {
     ui_->obj_loader->SetBgColor(color);
   }
 }
 
 void Viewer::OnPushButtonEdgeColorClicked() {
-  QColor color = QColorDialog::getColor(Qt::black);
+  QColor color = QColorDialog::getColor();
   if (color.isValid()) {
     ui_->obj_loader->SetEdgeColor(color);
   }
 }
 
 void Viewer::OnPushButtonVertexColorClicked() {
-  QColor color = QColorDialog::getColor(Qt::black);
+  QColor color = QColorDialog::getColor();
   if (color.isValid()) {
     ui_->obj_loader->SetVertexColor(color);
   }
